@@ -1,0 +1,1885 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CKP Ruta 40 — Órdenes de trabajo</title>
+<meta name="description" content="Sistema interno de órdenes de trabajo, historial de vehículos y avisos por WhatsApp de CKP Ruta 40, Junín de los Andes.">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#0b0b0b">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ===== Paleta y tipografías del taller (clásico azul) ===== */
+:root{
+  /* Colores del logo CKP Ruta 40: rojo, amarillo, gris y negro.
+     (las variables --azul* se mantienen de nombre: ahora son el color principal rojo) */
+  --negro:#0b0b0b; --negro-2:#1c1c1c; --rojo:#e71d25; --amarillo:#fad604; --gris:#929192;
+  --azul:#c62828; --azul-2:#a11f1b; --azul-claro:#fff6d9; --azul-borde:#ecd27c;
+  --fondo:#f3f3f2; --card:#ffffff; --texto:#161616; --muted:#5e5e5e; --borde:#dddcda;
+  --ok:#1b7041; --ok-bg:#e3f5ea; --warn:#8a5300; --warn-bg:#fff2d6; --danger:#b42318; --danger-bg:#fdecea;
+  --wa:#1a9e50; --wa-2:#14813f;
+  --f-texto:'Barlow', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --f-titulo:'Barlow Condensed', 'Barlow', system-ui, sans-serif;
+  --radio:10px; --nav-h:64px;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0}
+body{font-family:var(--f-texto);font-size:16px;line-height:1.5;color:var(--texto);background:var(--fondo);-webkit-font-smoothing:antialiased}
+a{color:#a11f1b}
+button,input,select,textarea{font:inherit;color:inherit}
+h1,h2,h3{font-family:var(--f-titulo);font-weight:600;margin:0;line-height:1.15;letter-spacing:.2px}
+h1{font-size:28px} h2{font-size:22px} h3{font-size:18px}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.skip{position:absolute;left:-999px;top:8px;background:#fff;padding:8px 12px;z-index:100}
+.skip:focus{left:8px}
+:focus-visible{outline:3px solid #f0a020;outline-offset:2px}
+svg.i{width:20px;height:20px;flex:none;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+/* ===== Estructura ===== */
+.app{min-height:100vh;display:flex;flex-direction:column}
+.topbar{background:var(--negro);color:#fff;position:sticky;top:0;z-index:20;border-bottom:3px solid var(--amarillo)}
+.logo-img{height:44px;width:auto;display:block}
+.logo-link{display:block;border-radius:6px;flex:none}
+.btn-taller{display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:0 12px;border-radius:8px;border:1px solid #3a3a3a;color:#fff;text-decoration:none;font-weight:600;font-size:14px;white-space:nowrap}
+.btn-taller:hover{border-color:var(--amarillo);color:var(--amarillo)}
+.btn-taller.on{border-color:var(--amarillo);color:var(--amarillo)}
+@media (max-width:420px){.btn-taller span{display:none}.btn-taller{width:40px;padding:0;justify-content:center}.logo-img{height:38px}.topbar-in{gap:8px;padding:9px 12px}}
+.topbar-in{display:flex;align-items:center;gap:12px;padding:10px 16px;max-width:1180px;margin:0 auto}
+.logo{width:40px;height:40px;border-radius:8px;background:#fff;color:var(--azul);display:grid;place-items:center;font-family:var(--f-titulo);font-weight:700;font-size:17px;letter-spacing:.5px;flex:none}
+.marca b{display:block;font-family:var(--f-titulo);font-size:20px;font-weight:600;line-height:1.1}
+.marca span{font-size:13px;opacity:.85}
+.topbar .spacer{flex:1}
+.demo-tag{font-size:12px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.3);padding:3px 8px;border-radius:999px;white-space:nowrap}
+.layout{flex:1;display:flex;max-width:1180px;width:100%;margin:0 auto}
+.side{display:none}
+main{flex:1;min-width:0;padding:16px 16px calc(var(--nav-h) + 24px)}
+.bottomnav{position:fixed;left:0;right:0;bottom:0;height:var(--nav-h);background:#fff;border-top:1px solid var(--borde);display:flex;z-index:30;padding-bottom:env(safe-area-inset-bottom)}
+.bottomnav a{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-decoration:none;color:var(--muted);font-size:11px;font-weight:500;min-height:44px}
+.bottomnav a.on{color:var(--azul)}
+.bottomnav a.on svg{stroke-width:2.4}
+@media (min-width:900px){
+  .bottomnav{display:none}
+  .side{display:block;width:220px;flex:none;padding:20px 0 20px 16px}
+  .side nav{position:sticky;top:80px;display:flex;flex-direction:column;gap:4px}
+  .side a{display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:8px;text-decoration:none;color:var(--texto);font-weight:500}
+  .side a:hover{background:#e6ecf4}
+  .side a.on{background:var(--negro);color:#fff;box-shadow:inset 4px 0 0 var(--amarillo)}
+  main{padding:20px 24px 32px}
+}
+.foot{max-width:1180px;width:100%;margin:0 auto;padding:4px 16px calc(var(--nav-h) + 16px);display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center;font-size:12.5px;color:var(--muted)}
+@media (min-width:900px){.foot{padding-bottom:20px}}
+.foot a{display:inline-flex;align-items:center;gap:6px;color:var(--wa-2);text-decoration:none;font-weight:600;border:1px solid #bfe3cc;border-radius:999px;padding:4px 10px;background:#fff}
+
+/* ===== Componentes ===== */
+.vhead{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.vhead h1{flex:1;min-width:0}
+.vhead .sub{width:100%;color:var(--muted);font-size:14px;margin-top:-6px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 16px;border-radius:var(--radio);border:1px solid var(--borde);background:#fff;font-weight:600;cursor:pointer;text-decoration:none;color:var(--texto);white-space:nowrap}
+.btn:hover{border-color:#b8c4d3;background:#f8fafc}
+.btn.pri{background:var(--azul);border-color:var(--azul);color:#fff}
+.btn.pri:hover{background:var(--azul-2)}
+.btn.wa{background:var(--wa);border-color:var(--wa);color:#fff}
+.btn.wa:hover{background:var(--wa-2)}
+.btn.peligro{color:var(--danger);border-color:#f0c4bf}
+.btn.peligro.lleno{background:var(--danger);color:#fff;border-color:var(--danger)}
+.btn.chico{min-height:36px;padding:0 12px;font-size:14px}
+.btn.icono{width:44px;padding:0}
+.btn.bloque{width:100%}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+.card{background:var(--card);border:1px solid var(--borde);border-radius:12px;padding:16px}
+.card + .card{margin-top:12px}
+.card h3{margin-bottom:10px}
+.grid2{display:grid;gap:12px}
+@media (min-width:700px){.grid2{grid-template-columns:1fr 1fr}}
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:16px}
+@media (min-width:700px){.stats{grid-template-columns:repeat(4,1fr)}}
+.stat{background:#fff;border:1px solid var(--borde);border-radius:12px;padding:12px 14px;text-align:left;cursor:pointer;font:inherit;color:inherit}
+.stat:hover{border-color:var(--azul-borde)}
+.stat b{display:block;font-family:var(--f-titulo);font-size:30px;font-weight:600;line-height:1.1;color:var(--negro)}
+.stat{box-shadow:inset 0 3px 0 var(--amarillo)}
+.stat span{font-size:13.5px;color:var(--muted)}
+.stat.alerta b{color:var(--danger)}
+.buscar{position:relative;margin-bottom:12px}
+.buscar svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted)}
+.buscar input{width:100%;min-height:46px;border:1px solid var(--borde);border-radius:var(--radio);padding:0 12px 0 40px;background:#fff}
+.chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;margin-bottom:12px;scrollbar-width:thin}
+.chip{flex:none;min-height:38px;padding:0 14px;border-radius:999px;border:1px solid var(--borde);background:#fff;font-weight:500;font-size:14px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.chip.on{background:var(--negro);border-color:var(--negro);color:#fff}
+.chip .n{font-size:12px;background:rgba(0,0,0,.08);border-radius:999px;padding:0 7px}
+.chip.on .n{background:rgba(255,255,255,.25)}
+.lista{display:grid;gap:10px}
+@media (min-width:700px){.lista.cols{grid-template-columns:1fr 1fr}}
+.ot{display:block;background:#fff;border:1px solid var(--borde);border-radius:12px;padding:14px;text-decoration:none;color:inherit}
+.ot:hover{border-color:var(--azul-borde);background:#fbfdff}
+.ot-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px}
+.ot-veh{font-weight:600}
+.ot-cli{color:var(--muted);font-size:14px}
+.ot-tareas{font-size:14px;margin-top:6px;color:#2c3747}
+.ot-bottom{display:flex;justify-content:space-between;align-items:baseline;margin-top:10px;font-size:13px;color:var(--muted);gap:8px}
+.ot-bottom strong{font-family:var(--f-titulo);font-size:20px;color:var(--texto);font-weight:600}
+.patente{display:inline-block;font-family:var(--f-titulo);font-weight:700;font-size:16px;letter-spacing:1.5px;background:#fff;color:#111;border:2px solid #222;border-top:6px solid #1d4f91;border-radius:5px;padding:0 8px;line-height:1.35}
+.patente.grande{font-size:24px;padding:2px 12px}
+.badge{display:inline-flex;align-items:center;font-size:12.5px;font-weight:600;padding:3px 10px;border-radius:999px;white-space:nowrap}
+.e-ingresado{background:#eceff4;color:#3d4757}
+.e-presupuestado{background:var(--warn-bg);color:var(--warn)}
+.e-aprobado{background:#fde7e6;color:#9b1c17}
+.e-reparacion{background:#ffe9d6;color:#94400f}
+.e-listo{background:var(--ok-bg);color:var(--ok)}
+.e-entregado{background:#e6e9ee;color:#4a5566}
+.vacio{text-align:center;padding:36px 16px;color:var(--muted);background:#fff;border:1px dashed var(--borde);border-radius:12px}
+.vacio p{margin:0 0 12px}
+.muted{color:var(--muted)}
+.chico-txt{font-size:13.5px}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:15px}
+.kv dt{color:var(--muted)}
+.kv dd{margin:0;font-weight:500;overflow-wrap:anywhere}
+
+/* Stepper de estados */
+.pasos{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px}
+.paso{flex:1 0 auto;min-height:44px;padding:6px 12px;border-radius:8px;border:1px solid var(--borde);background:#fff;font-size:13.5px;font-weight:600;cursor:pointer;color:var(--muted);display:flex;align-items:center;gap:6px}
+.paso.hecho{color:var(--negro);border-color:var(--azul-borde);background:#fffbea}
+.paso.actual{background:var(--negro);color:#fff;border-color:var(--negro)}
+.paso.actual.listo{background:var(--ok);border-color:var(--ok)}
+
+.h-queja{background:var(--danger-bg);color:var(--danger)}
+.h-pend{background:var(--warn-bg);color:var(--warn)}
+.h-gar{background:var(--azul-claro);color:var(--azul-2)}
+.h-obs{background:#eceff4;color:#3d4757}
+.alerta-hojas{background:#fff6ec;border:1px solid #f2c79c;border-radius:12px;padding:12px 14px;margin-bottom:12px;font-size:14.5px}
+.alerta-hojas b{display:flex;align-items:center;gap:8px;color:#8a3f0a}
+.alerta-hojas ul{margin:8px 0 0;padding-left:20px}
+.alerta-hojas li{margin-top:4px}
+.encontrado .alerta-hojas{width:100%;margin:4px 0 0}
+.filtros{padding:0;margin-bottom:12px}
+.filtros summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:10px;padding:14px 16px;font-weight:600;min-height:48px}
+.filtros summary::-webkit-details-marker{display:none}
+.filtros summary .n{margin-left:auto;font-size:13px;color:var(--azul);font-weight:600}
+.filtros-in{padding:0 16px 16px}
+.filtros-in .campo{margin-bottom:10px}
+.filtros-in .chips{margin-bottom:10px}
+.resumen-hist{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;justify-content:space-between;background:#fff;border:1px solid var(--borde);border-radius:12px;padding:12px 14px;margin-bottom:12px}
+.resumen-hist b{font-family:var(--f-titulo);font-size:22px;font-weight:600}
+.hist .h-veh{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:6px}
+.desc-hoja{white-space:pre-wrap;font-size:15.5px;margin:0}
+.serv-rapidos{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.serv-rapidos .chip{flex:0 1 auto;max-width:100%;white-space:normal;text-align:left;min-height:36px;padding:6px 12px;font-size:13.5px;line-height:1.25}
+.serv-rapidos .chip svg{width:16px;height:16px;color:var(--rojo)}
+.info-hero{background:var(--negro);border-radius:14px;padding:22px 18px;text-align:center;border-bottom:4px solid var(--amarillo);margin-bottom:12px}
+.info-hero img{width:min(380px,90%);height:auto}
+.servicios{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.servicios li{display:flex;gap:10px;align-items:flex-start;font-size:15.5px}
+.servicios li svg{color:var(--rojo);margin-top:3px}
+.red-gps{display:flex;gap:12px;align-items:center;background:var(--negro);color:#fff;border-radius:12px;padding:14px 16px;margin-top:12px}
+.red-gps .ic{width:44px;height:44px;border-radius:50%;background:var(--amarillo);color:var(--negro);display:grid;place-items:center;flex:none}
+.red-gps b{color:var(--amarillo)}
+.pr-logo{height:56px;width:auto;display:block;margin-bottom:4px}
+.pr-serv{margin-top:14px;font-size:11px;color:#333;border-top:1px solid #999;padding-top:8px}
+.msg-btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.btn.punteado{border-style:dashed;border-color:#c9b25a;color:var(--negro);background:#fffbea}
+.msg-guardado{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--borde);border-radius:10px;padding:10px 12px;margin-top:8px}
+.msg-guardado div{flex:1;min-width:0}
+.msg-guardado p{margin:2px 0 0;font-size:13px;color:var(--muted);white-space:pre-wrap;max-height:60px;overflow:hidden}
+.check-fila{display:flex;align-items:center;gap:10px;min-height:44px;font-weight:600;cursor:pointer}
+.check-fila input{width:22px;height:22px;accent-color:var(--azul)}
+.aviso-listo{background:var(--ok-bg);border:1px solid #b7e0c6;border-radius:12px;padding:16px;margin-bottom:12px}
+.aviso-listo h3{color:var(--ok);margin-bottom:4px}
+.aviso-listo .acc{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+
+.tareas{list-style:none;margin:0;padding:0}
+.tareas li{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #edf1f6}
+.tareas li:last-child{border-bottom:0}
+.tareas label{display:flex;align-items:center;gap:10px;flex:1;cursor:pointer;min-height:36px}
+.tareas input[type=checkbox]{width:22px;height:22px;accent-color:var(--azul);flex:none}
+.tareas .hecha span{text-decoration:line-through;color:var(--muted)}
+.total-box{display:flex;justify-content:space-between;align-items:baseline;border-top:2px solid var(--texto);margin-top:10px;padding-top:10px}
+.total-box b{font-family:var(--f-titulo);font-size:28px;font-weight:700}
+
+.fotos{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px}
+.foto{position:relative;aspect-ratio:1;border-radius:8px;overflow:hidden;border:1px solid var(--borde);background:#eef2f7}
+.foto img{width:100%;height:100%;object-fit:cover;display:block;cursor:zoom-in}
+.foto button{position:absolute;top:4px;right:4px;width:30px;height:30px;border-radius:50%;border:0;background:rgba(0,0,0,.6);color:#fff;display:grid;place-items:center;cursor:pointer}
+.foto button svg{width:16px;height:16px}
+.add-foto{aspect-ratio:1;border:2px dashed var(--azul-borde);border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:var(--negro);font-size:13px;font-weight:600;cursor:pointer;background:#fffbea}
+.add-foto input{display:none}
+
+.timeline{list-style:none;margin:0;padding:0}
+.timeline li{position:relative;padding:0 0 12px 22px;font-size:14px}
+.timeline li::before{content:"";position:absolute;left:5px;top:6px;width:9px;height:9px;border-radius:50%;background:var(--azul)}
+.timeline li::after{content:"";position:absolute;left:9px;top:16px;bottom:0;width:1px;background:var(--borde)}
+.timeline li:last-child::after{display:none}
+
+.hist{display:grid;gap:8px}
+.hist a{display:block;text-decoration:none;color:inherit;border:1px solid var(--borde);border-radius:10px;padding:12px;background:#fff}
+.hist a:hover{border-color:var(--azul-borde)}
+.hist .h-top{display:flex;justify-content:space-between;gap:8px;font-size:14px;color:var(--muted)}
+.hist .h-t{margin-top:4px}
+.hist .h-tot{font-family:var(--f-titulo);font-weight:600;font-size:18px;color:var(--texto)}
+
+.svc{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.svc .badge{margin-left:auto}
+
+/* ===== Formularios ===== */
+.campo{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.campo label{font-weight:600;font-size:14.5px}
+.campo .ayuda{font-size:13px;color:var(--muted)}
+.campo input,.campo select,.campo textarea{min-height:46px;border:1px solid #c9d3df;border-radius:var(--radio);padding:10px 12px;background:#fff;width:100%}
+.campo textarea{min-height:96px;resize:vertical}
+.campo input.patente-in{font-family:var(--f-titulo);font-size:22px;letter-spacing:2px;text-transform:uppercase;font-weight:700}
+.campo .err-msg{color:var(--danger);font-size:13px;display:none}
+.campo.err input,.campo.err select,.campo.err textarea{border-color:var(--danger);background:#fffafa}
+.campo.err .err-msg{display:block}
+.fila{display:grid;gap:0 12px}
+@media (min-width:560px){.fila{grid-template-columns:1fr 1fr}.fila.tres{grid-template-columns:1fr 1fr 1fr}}
+.add-tarea{display:flex;gap:8px}
+.add-tarea input{flex:1;min-width:0}
+.tarea-ed{display:flex;align-items:center;gap:8px;background:#f6f8fb;border:1px solid var(--borde);border-radius:8px;padding:6px 6px 6px 12px;margin-top:8px}
+.tarea-ed span{flex:1;min-width:0;overflow-wrap:anywhere}
+.encontrado{background:var(--azul-claro);border:1px solid var(--azul-borde);border-radius:10px;padding:12px;margin-bottom:14px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.form-acc{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:8px}
+.errores{background:var(--danger-bg);border:1px solid #f3c1bb;color:var(--danger);border-radius:10px;padding:12px 14px;margin-bottom:12px;font-size:14.5px}
+.errores ul{margin:4px 0 0;padding-left:18px}
+.wa-num{font-size:13.5px;margin-top:2px}
+.wa-num.ok{color:var(--ok)} .wa-num.mal{color:var(--danger)}
+fieldset{border:0;padding:0;margin:0}
+legend{font-family:var(--f-titulo);font-size:18px;font-weight:600;margin-bottom:10px;padding:0}
+
+/* ===== Modal y toast ===== */
+.modal-fondo{position:fixed;inset:0;background:rgba(10,20,35,.5);z-index:60;display:flex;align-items:flex-end;justify-content:center;padding:0}
+@media (min-width:600px){.modal-fondo{align-items:center;padding:20px}}
+.modal{background:#fff;width:100%;max-width:560px;max-height:92vh;overflow:auto;border-radius:16px 16px 0 0;padding:18px 18px calc(18px + env(safe-area-inset-bottom))}
+@media (min-width:600px){.modal{border-radius:16px}}
+.modal-h{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.modal-h h2{flex:1}
+.modal-img{max-width:100%;border-radius:10px;display:block;margin:0 auto}
+.toasts{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(var(--nav-h) + 14px);z-index:80;display:flex;flex-direction:column;gap:8px;width:min(92vw,420px)}
+@media (min-width:900px){.toasts{bottom:24px}}
+.toast{background:#17212e;color:#fff;padding:12px 16px;border-radius:10px;font-size:14.5px;box-shadow:0 6px 20px rgba(0,0,0,.18)}
+.toast.error{background:var(--danger)}
+.toast.ok{background:var(--ok)}
+
+/* ===== Bloqueo con PIN ===== */
+.lock{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:24px 20px;background:var(--negro)}
+.lock-logo{width:min(320px,86vw);height:auto;display:block}
+.lock-info{color:#bdbdbd;font-size:13.5px;text-align:center;line-height:1.6;max-width:360px}
+.lock-info b{color:var(--amarillo);font-weight:600}
+.lock-card{background:#fff;border-radius:16px;padding:28px 22px;width:100%;max-width:360px;text-align:center}
+.lock-card .logo{width:64px;height:64px;font-size:26px;margin:0 auto 12px;background:var(--azul);color:#fff}
+.lock-card input{width:100%;min-height:54px;font-size:28px;letter-spacing:12px;text-align:center;border:1px solid #c9d3df;border-radius:10px;margin:16px 0 10px;font-family:var(--f-titulo)}
+.lock-card .err-txt{color:var(--danger);font-size:14px;min-height:20px}
+
+/* ===== Comprobante (impresión) ===== */
+#print-area{display:none}
+@media print{
+  body{background:#fff}
+  .app,.modal-fondo,.toasts,.lock{display:none!important}
+  #print-area{display:block;font-family:var(--f-texto);color:#000;padding:10mm}
+}
+.comp{border:1px solid var(--borde);border-radius:10px;padding:14px;font-size:14px;background:#fff;color:#000}
+.pr-h{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;border-bottom:2px solid #000;padding-bottom:8px;margin-bottom:12px}
+.pr-h h1{font-size:24px}
+.pr-t{width:100%;border-collapse:collapse;margin:10px 0}
+.pr-t td,.pr-t th{border-bottom:1px solid #999;padding:6px 4px;text-align:left;font-size:13px;vertical-align:top}
+.pr-tot{text-align:right;font-size:20px;font-weight:700;margin-top:8px}
+.pr-firma{margin-top:36px;display:flex;justify-content:space-between;gap:16px;font-size:12px}
+.pr-firma div{border-top:1px solid #000;flex:1;padding-top:4px;text-align:center}
+.pr-pie{margin-top:20px;font-size:10px;color:#555;text-align:center}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Saltar al contenido</a>
+<div id="root"></div>
+<div id="modal-root"></div>
+<div class="toasts" id="toasts" role="status" aria-live="polite"></div>
+<div id="print-area" aria-hidden="true"></div>
+
+<script>
+/* =========================================================
+   TALLER CKP — Demo de órdenes de trabajo
+   Un solo archivo: HTML + CSS + JS, datos en localStorage.
+   ========================================================= */
+
+/* ---------- Configuración de la demo ---------- */
+const CONFIG = {
+  STORAGE_KEY: 'ckp_taller_demo_v1',
+  SESSION_KEY: 'ckp_taller_sesion',
+  DESARROLLADOR_WA: '5492944242906',
+  ESTADOS: ['Ingresado','Presupuestado','Aprobado','En reparación','Listo','Entregado'],
+  TIPOS: ['Auto','Camioneta','Moto','Utilitario / camión'],
+  DIAS_AVISO_SERVICE: 30
+};
+const CLASE_ESTADO = {
+  'Ingresado':'e-ingresado','Presupuestado':'e-presupuestado','Aprobado':'e-aprobado',
+  'En reparación':'e-reparacion','Listo':'e-listo','Entregado':'e-entregado'
+};
+/* Datos del taller (se editan en Ajustes) */
+const DATOS_TALLER = {
+  taller:'CKP Ruta 40',
+  direccion:'Lolog 381, Junín de los Andes',
+  email:'Ckp.checkengine@gmail.com',
+  horario:'Lunes a viernes de 9 a 18 h',
+  telefono:'',
+  redGPS:'Taller adherido a la Red Nacional GPS Taller',
+  servicios:[
+    'Reparación de vehículos livianos y utilitarios',
+    'Reparación de motores nacionales e importados',
+    'Diagnóstico con scanner para todo tipo de vehículos, marcas nacionales e importadas',
+    'Tren delantero y alineación 3D',
+    'Historial del vehículo'
+  ]
+};
+const LOGO = 'data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz48c3ZnIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHZpZXdCb3g9IjMxLjk0IDEwMy4yMiAxOTQuNTUgNTEuOTkiPjxkZWZzPjxjbGlwUGF0aCBpZD0iY2xpcC0wIj48cGF0aCBjbGlwLXJ1bGU9Im5vbnplcm8iIGQ9Ik0gMCAwIEwgMjU4LjQwMjM0NCAwIEwgMjU4LjQwMjM0NCAyNTguNDAyMzQ0IEwgMCAyNTguNDAyMzQ0IFogTSAwIDAgIi8+PC9jbGlwUGF0aD48L2RlZnM+PGcgY2xpcC1wYXRoPSJ1cmwoI2NsaXAtMCkiPjwvZz48cGF0aCBmaWxsLXJ1bGU9Im5vbnplcm8iIGZpbGw9InJnYig5OC4wMzkyNDYlLCA4My45MjE4MTQlLCAxLjU2ODYwNCUpIiBmaWxsLW9wYWNpdHk9IjEiIGQ9Ik0gMTAxLjI5Mjk2OSAxMTkuOTg0Mzc1IEMgMTAxLjQ2MDkzOCAxMTkuNzczNDM4IDEwMS42NDg0MzggMTE5LjQ4ODI4MSAxMDEuOTY0ODQ0IDExOS41NDI5NjkgQyAxMDcuNjQ0NTMxIDExOS41NDY4NzUgMTEzLjMyMDMxMiAxMTkuNTUwNzgxIDExOSAxMTkuNTQyOTY5IEMgMTE5Ljg5ODQzOCAxMTkuNDg4MjgxIDEyMC44MDA3ODEgMTE5LjU1MDc4MSAxMjEuNzA3MDMxIDExOS41NTQ2ODggQyAxMjEuOTU3MDMxIDExOS41NTA3ODEgMTIyLjA4MjAzMSAxMTkuODEyNSAxMjIuMjM4MjgxIDExOS45Njg3NSBDIDEyMi4yMTA5MzggMTIwLjY0ODQzOCAxMjIuMjU3ODEyIDEyMS4zMjgxMjUgMTIyLjIyMjY1NiAxMjIuMDAzOTA2IEMgMTIyLjA5Mzc1IDEyMi4yMjY1NjIgMTIxLjg2MzI4MSAxMjIuNDMzNTk0IDEyMS41OTM3NSAxMjIuMzk0NTMxIEMgMTE5LjgwMDc4MSAxMjIuNDA2MjUgMTE4LjAxMTcxOSAxMjIuMzg2NzE5IDExNi4yMjI2NTYgMTIyLjQxMDE1NiBDIDExNi4yMzA0NjkgMTIyLjg2NzE4OCAxMTYuMjI2NTYyIDEyMy4zMjAzMTIgMTE2LjIzMDQ2OSAxMjMuNzc3MzQ0IEMgMTE4LjI1NzgxMiAxMjMuNzg5MDYyIDEyMC4yOTI5NjkgMTIzLjc5Njg3NSAxMjIuMzI0MjE5IDEyMy43NjU2MjUgQyAxMjMuMDM5MDYyIDEyMy43MDMxMjUgMTIzLjcyMjY1NiAxMjQuMjg5MDYyIDEyMy44NjMyODEgMTI0Ljk3NjU2MiBDIDEyMy45MDYyNSAxMjUuNjkxNDA2IDEyMy44ODY3MTkgMTI2LjQwNjI1IDEyMy44OTA2MjUgMTI3LjEyMTA5NCBDIDEyNC4zMTI1IDEyNy4xMzY3MTkgMTI0LjgzMjAzMSAxMjcuMTEzMjgxIDEyNS4wNDI5NjkgMTI3LjU2NjQwNiBDIDEyNS4xNTIzNDQgMTI3Ljk5NjA5NCAxMjUuMDU4NTk0IDEyOC40NjQ4NDQgMTI1LjA5NzY1NiAxMjguOTEwMTU2IEMgMTI1LjA3ODEyNSAxMjkuMjE0ODQ0IDEyNS4xOTE0MDYgMTI5LjU3NDIxOSAxMjQuOTYwOTM4IDEyOS44MjQyMTkgQyAxMjQuODUxNTYyIDEyOS45NzY1NjIgMTI0LjY5MTQwNiAxMzAuMDc4MTI1IDEyNC41NDY4NzUgMTMwLjE5OTIxOSBDIDEyMy43MjI2NTYgMTMwLjE5MTQwNiAxMjIuODk4NDM4IDEzMC4xOTkyMTkgMTIyLjA3NDIxOSAxMzAuMjAzMTI1IEMgMTIxLjQ5NjA5NCAxMzAuMjI2NTYyIDEyMC44ODI4MTIgMTI5Ljc3MzQzOCAxMjAuODI4MTI1IDEyOS4xNzU3ODEgQyAxMjAuNzg5MDYyIDEyOC4zNTE1NjIgMTIwLjgyNDIxOSAxMjcuNTIzNDM4IDEyMC44MDg1OTQgMTI2LjY5OTIxOSBDIDExNC44ODY3MTkgMTI2LjY3MTg3NSAxMDguOTY0ODQ0IDEyNi42OTE0MDYgMTAzLjA0Mjk2OSAxMjYuNjc5Njg4IEMgMTAzLjAxNTYyNSAxMjcuNTAzOTA2IDEwMy4wNTg1OTQgMTI4LjMzMjAzMSAxMDMuMDM5MDYyIDEyOS4xNjAxNTYgQyAxMDMuMDQyOTY5IDEyOS43Njk1MzEgMTAyLjQwNjI1IDEzMC4yMTA5MzggMTAxLjgzOTg0NCAxMzAuMTk5MjE5IEMgMTAwLjY2Nzk2OSAxMzAuMjAzMTI1IDk5LjUgMTMwLjE5MTQwNiA5OC4zMzIwMzEgMTMwLjIwMzEyNSBDIDk4LjM1NTQ2OSAxMzIuMDMxMjUgOTguMzQ3NjU2IDEzMy44NjMyODEgOTguMzcxMDk0IDEzNS42OTUzMTIgQyA5OC40NDkyMTkgMTM2Ljc4OTA2MiA5OC40MjU3ODEgMTM3Ljg4NjcxOSA5OC40Mzc1IDEzOC45ODQzNzUgQyA5OC40NDUzMTIgMTQwLjgyODEyNSA5OC40Njg3NSAxNDIuNjc1NzgxIDk4LjQ2ODc1IDE0NC41MTk1MzEgQyA5OS43NTc4MTIgMTQ0LjQ5NjA5NCAxMDEuMDQyOTY5IDE0NC41MTk1MzEgMTAyLjMzMjAzMSAxNDQuNTExNzE5IEMgMTAyLjc5Mjk2OSAxNDQuNTE1NjI1IDEwMy4yMDMxMjUgMTQ0LjgwNDY4OCAxMDMuNDU3MDMxIDE0NS4xNzU3ODEgQyAxMDQuNTQyOTY5IDE0Ni41NTg1OTQgMTA1LjY3OTY4OCAxNDcuOTAyMzQ0IDEwNi43NjU2MjUgMTQ5LjI4MTI1IEMgMTA3LjEwNTQ2OSAxNDkuNzE4NzUgMTA3LjQ5NjA5NCAxNTAuMTE3MTg4IDEwNy43NzM0MzggMTUwLjYwMTU2MiBDIDE0NC4yOTI5NjkgMTUwLjU5NzY1NiAxODAuODEyNSAxNTAuNTg5ODQ0IDIxNy4zMjgxMjUgMTUwLjU4OTg0NCBDIDIxNy42NDg0MzggMTUwLjU2MjUgMjE3Ljg1MTU2MiAxNTAuODM5ODQ0IDIxOC4wMDM5MDYgMTUxLjA3ODEyNSBDIDIxNy45NzI2NTYgMTUxLjcxMDkzOCAyMTggMTUyLjM0Mzc1IDIxNy45ODgyODEgMTUyLjk3MjY1NiBDIDIxOC4wMTk1MzEgMTUzLjI5Njg3NSAyMTcuNjgzNTk0IDE1My40NTMxMjUgMjE3LjQ4MDQ2OSAxNTMuNjMyODEyIEMgMTkxLjY4MzU5NCAxNTMuNjM2NzE5IDE2NS44ODI4MTIgMTUzLjYzNjcxOSAxNDAuMDg1OTM4IDE1My42MzY3MTkgQyAxMjkuMDIzNDM4IDE1My42MzI4MTIgMTE3Ljk2MDkzOCAxNTMuNjUyMzQ0IDEwNi44OTg0MzggMTUzLjYyODkwNiBDIDEwNi4zNjcxODggMTUzLjY2Nzk2OSAxMDYuMDE1NjI1IDE1My4yNTc4MTIgMTA1Ljc2OTUzMSAxNTIuODQ3NjU2IEMgMTA0LjQyMTg3NSAxNTEuMDcwMzEyIDEwMi45ODQzNzUgMTQ5LjM2NzE4OCAxMDEuNjI1IDE0Ny41OTc2NTYgQyAxMDAuMDQ2ODc1IDE0Ny41NzAzMTIgOTguNDY4NzUgMTQ3LjYxMzI4MSA5Ni44OTA2MjUgMTQ3LjU5NzY1NiBDIDk2LjM0Mzc1IDE0Ny42MDkzNzUgOTUuODUxNTYyIDE0Ny4yMzQzNzUgOTUuNjEzMjgxIDE0Ni43NTc4MTIgQyA5NS40MDYyNSAxNDYuMzUxNTYyIDk1LjUyMzQzOCAxNDUuODgyODEyIDk1LjQ5MjE4OCAxNDUuNDQ1MzEyIEMgOTUuNDUzMTI1IDE0My41MTk1MzEgOTUuNTIzNDM4IDE0MS41ODIwMzEgOTUuNDA2MjUgMTM5LjY2MDE1NiBDIDk1LjM3ODkwNiAxMzkuMzc4OTA2IDk1LjM4MjgxMiAxMzkuMDk3NjU2IDk1LjQyNTc4MSAxMzguODE2NDA2IEMgOTQuOTAyMzQ0IDEzOC43Njk1MzEgOTQuMzc1IDEzOC43OTY4NzUgOTMuODUxNTYyIDEzOC43ODUxNTYgQyA5My44NDM3NSAxNDEuMTQwNjI1IDkzLjkyMTg3NSAxNDMuNSA5My44ODY3MTkgMTQ1Ljg1NTQ2OSBDIDkzLjY3OTY4OCAxNDYuMDExNzE5IDkzLjUgMTQ2LjI3NzM0NCA5My4yMTA5MzggMTQ2LjI1MzkwNiBDIDkyLjYzMjgxMiAxNDYuMjUzOTA2IDkyLjA1NDY4OCAxNDYuMjY1NjI1IDkxLjQ3NjU2MiAxNDYuMjYxNzE5IEMgOTEuMjQ2MDk0IDE0Ni4yODEyNSA5MS4wNzgxMjUgMTQ2LjEwNTQ2OSA5MC45Mjk2ODggMTQ1Ljk1NzAzMSBDIDkwLjgzOTg0NCAxNDQuNDY4NzUgOTAuOTQ5MjE5IDE0Mi45NjQ4NDQgOTAuODM1OTM4IDE0MS40NzY1NjIgQyA5MC43ODEyNSAxMzguMzEyNSA5MC44MjQyMTkgMTM1LjE0ODQzOCA5MC43MTg3NSAxMzEuOTg4MjgxIEMgOTAuNzI2NTYyIDEzMS4wNDI5NjkgOTAuNjg3NSAxMzAuMDk3NjU2IDkwLjY5NTMxMiAxMjkuMTQ4NDM4IEMgOTAuNjcxODc1IDEyOC44NTU0NjkgOTAuOTEwMTU2IDEyOC42MDkzNzUgOTEuMTU2MjUgMTI4LjQ5MjE4OCBDIDkxLjg5MDYyNSAxMjguNDYwOTM4IDkyLjYyODkwNiAxMjguNDcyNjU2IDkzLjM2MzI4MSAxMjguNDc2NTYyIEMgOTMuNTkzNzUgMTI4LjY3NTc4MSA5My43NjU2MjUgMTI4Ljk0OTIxOSA5My43MjY1NjIgMTI5LjI2OTUzMSBDIDkzLjczMDQ2OSAxMzEuNDU3MDMxIDkzLjc3MzQzOCAxMzMuNjQ4NDM4IDkzLjc3MzQzOCAxMzUuODM1OTM4IEMgOTQuMjkyOTY5IDEzNS44MzIwMzEgOTQuODE2NDA2IDEzNS44MzU5MzggOTUuMzM5ODQ0IDEzNS44MzIwMzEgQyA5NS4zNjcxODggMTMzLjMxMjUgOTUuMjE0ODQ0IDEzMC44MDA3ODEgOTUuMjU3ODEyIDEyOC4yODEyNSBDIDk1LjQ0NTMxMiAxMjcuODIwMzEyIDk1Ljc5Njg3NSAxMjcuMzc1IDk2LjI5Njg3NSAxMjcuMjUgQyA5Ny41NTA3ODEgMTI3LjIwNzAzMSA5OC44MDQ2ODggMTI3LjI0MjE4OCAxMDAuMDU4NTk0IDEyNy4yMzQzNzUgQyAxMDAuMTAxNTYyIDEyNi4zOTQ1MzEgMTAwLjAyMzQzOCAxMjUuNTU0Njg4IDEwMC4wNzQyMTkgMTI0LjcxNDg0NCBDIDEwMC4xOTUzMTIgMTI0LjI1MzkwNiAxMDAuNjQwNjI1IDEyMy45MTQwNjIgMTAxLjA4OTg0NCAxMjMuODA4NTk0IEMgMTAzLjI5Njg3NSAxMjMuNzgxMjUgMTA1LjUxMTcxOSAxMjMuODE2NDA2IDEwNy43MTg3NSAxMjMuODAwNzgxIEMgMTA3LjY5OTIxOSAxMjMuMzMyMDMxIDEwNy43MDcwMzEgMTIyLjg2MzI4MSAxMDcuNjkxNDA2IDEyMi4zOTg0MzggQyAxMDUuNjk5MjE5IDEyMi40MTAxNTYgMTAzLjcwNzAzMSAxMjIuNDA2MjUgMTAxLjcxODc1IDEyMi40MDIzNDQgQyAxMDEuNTgyMDMxIDEyMi4yNjk1MzEgMTAxLjQ0NTMxMiAxMjIuMTQwNjI1IDEwMS4zMTY0MDYgMTIyLjAwNzgxMiBDIDEwMS4zMjQyMTkgMTIxLjMzMjAzMSAxMDEuMzIwMzEyIDEyMC42NTYyNSAxMDEuMjkyOTY5IDExOS45ODQzNzUgIi8+PHBhdGggZmlsbC1ydWxlPSJub256ZXJvIiBmaWxsPSJyZ2IoOTAuNTg4Mzc5JSwgMTEuMzcyMzc1JSwgMTQuNTA5NTgzJSkiIGZpbGwtb3BhY2l0eT0iMSIgZD0iTSA5OS45NzY1NjIgMTA0LjkxNzk2OSBDIDEwOC4yMzgyODEgMTA0LjQ0OTIxOSAxMTYuNjA1NDY5IDEwNSAxMjQuNjUyMzQ0IDEwNy4wMDM5MDYgQyAxMjcuODU1NDY5IDEwNy43NDYwOTQgMTMwLjk4NDM3NSAxMDguNzYxNzE5IDEzNC4wODk4NDQgMTA5Ljg0Mzc1IEMgMTM2LjcyMjY1NiAxMTAuNzg5MDYyIDEzOS4zMzk4NDQgMTExLjc4OTA2MiAxNDEuOTEwMTU2IDExMi44OTg0MzggQyAxNDQuNDM3NSAxMTMuODk4NDM4IDE0Ni45NDE0MDYgMTE0Ljk2ODc1IDE0OS40ODA0NjkgMTE1Ljk0NTMxMiBDIDE1Mi4wMTU2MjUgMTE2Ljk2MDkzOCAxNTQuNjI4OTA2IDExNy43ODEyNSAxNTcuMjUzOTA2IDExOC41MzkwNjIgQyAxNTkuNzY1NjI1IDExOS4yNTc4MTIgMTYyLjMzNTkzOCAxMTkuNzQyMTg4IDE2NC45MDIzNDQgMTIwLjIwNzAzMSBDIDE3MC44MDg1OTQgMTIxLjA5NzY1NiAxNzYuNzY1NjI1IDEyMS41ODIwMzEgMTgyLjY3NTc4MSAxMjIuNDY0ODQ0IEMgMTg4LjUxMTcxOSAxMjMuMjU3ODEyIDE5NC4yOTY4NzUgMTI0LjM5MDYyNSAyMDAuMDU0Njg4IDEyNS42MTcxODggQyAyMDUuNDg0Mzc1IDEyNi44Mzk4NDQgMjEwLjg2NzE4OCAxMjguMzU5Mzc1IDIxNi4wMzkwNjIgMTMwLjQ0NTMxMiBDIDIxNy44MTI1IDEzMS4xMDU0NjkgMjE5LjUyMzQzOCAxMzEuOTI1NzgxIDIyMS4xOTUzMTIgMTMyLjgwODU5NCBDIDIyMi41MDM5MDYgMTMzLjUzMTI1IDIyMy43NSAxMzQuMzU5Mzc1IDIyNC45ODQzNzUgMTM1LjIwMzEyNSBDIDIyNC4yNzM0MzggMTM0Ljk3NjU2MiAyMjMuNjM2NzE5IDEzNC41NTg1OTQgMjIyLjk1MzEyNSAxMzQuMjU3ODEyIEMgMjIxLjU4OTg0NCAxMzMuNjEzMjgxIDIyMC4xNjAxNTYgMTMzLjExMzI4MSAyMTguNzY1NjI1IDEzMi41NDY4NzUgQyAyMTMuNTc4MTI1IDEzMC43MjY1NjIgMjA4LjI1IDEyOS4zNTE1NjIgMjAyLjg3MTA5NCAxMjguMjQ2MDk0IEMgMTk3LjcwNzAzMSAxMjcuMjYxNzE5IDE5Mi41MTE3MTkgMTI2LjQ0NTMxMiAxODcuMjg5MDYyIDEyNS44NDM3NSBDIDE4My44MTI1IDEyNS40ODQzNzUgMTgwLjMzOTg0NCAxMjUuMDc0MjE5IDE3Ni44NTU0NjkgMTI0Ljc2OTUzMSBDIDE3MC41MDM5MDYgMTI0LjE3MTg3NSAxNjQuMDk3NjU2IDEyMy44NjcxODggMTU3Ljg0NzY1NiAxMjIuNDk2MDk0IEMgMTU1LjM2NzE4OCAxMjEuOTMzNTk0IDE1Mi44OTQ1MzEgMTIxLjI5Njg3NSAxNTAuNDk2MDk0IDEyMC40NDE0MDYgQyAxNDUuNzE0ODQ0IDExOC45MDYyNSAxNDEuMTY0MDYyIDExNi43Njk1MzEgMTM2LjUzNTE1NiAxMTQuODMyMDMxIEMgMTMzLjM0Mzc1IDExMy40ODgyODEgMTMwLjEzMjgxMiAxMTIuMTY3OTY5IDEyNi44MzIwMzEgMTExLjEwMTU2MiBDIDEyMi42ODc1IDEwOS43MzA0NjkgMTE4LjM5NDUzMSAxMDguODE2NDA2IDExNC4wNjY0MDYgMTA4LjI1MzkwNiBDIDExMC40MTc5NjkgMTA3LjgwODU5NCAxMDYuNzM4MjgxIDEwNy41NjY0MDYgMTAzLjA2MjUgMTA3LjY4MzU5NCBDIDk0LjMyMDMxMiAxMDcuOTIxODc1IDg1LjU5NzY1NiAxMDkuMzc1IDc3LjI3NzM0NCAxMTIuMDg1OTM4IEMgNzUuMjE0ODQ0IDExMi43NSA3My4xODM1OTQgMTEzLjUzNTE1NiA3MS4yMTg3NSAxMTQuNDQ5MjE5IEMgNjkuMjU3ODEyIDExNS40NDkyMTkgNjcuMjYxNzE5IDExNi42MTcxODggNjUuOTc2NTYyIDExOC40NjA5MzggQyA2NS40MzM1OTQgMTE5LjIyMjY1NiA2NS4wNzAzMTIgMTIwLjU4OTg0NCA2NC45NjA5MzggMTIxLjUxOTUzMSBMIDMzLjQxNzk2OSAxMjEuNTQyOTY5IEMgMzcuMTIxMDk0IDEyMS4wOTc2NTYgNDAuOTU3MDMxIDExOS44NDc2NTYgNDQuNTk3NjU2IDExOS4wMzUxNTYgQyA0Ni43NjU2MjUgMTE4LjQ3MjY1NiA0OC45NjA5MzggMTE4LjAyNzM0NCA1MS4xMjUgMTE3LjQzMzU5NCBDIDU0LjI4MTI1IDExNi41OTc2NTYgNTcuMzk0NTMxIDExNS42MDE1NjIgNjAuNTA3ODEyIDExNC42MTMyODEgQyA2My4wNjY0MDYgMTEzLjg1MTU2MiA2NS42MDkzNzUgMTEzLjA1MDc4MSA2OC4xNDA2MjUgMTEyLjIxNDg0NCBDIDc1LjQ4MDQ2OSAxMDkuNzI2NTYyIDgyLjg4NjcxOSAxMDcuMzI0MjE5IDkwLjU1MDc4MSAxMDYuMDUwNzgxIEMgOTMuNjcxODc1IDEwNS41MTk1MzEgOTYuODEyNSAxMDUuMDk3NjU2IDk5Ljk3NjU2MiAxMDQuOTE3OTY5ICIvPjxwYXRoIGZpbGwtcnVsZT0ibm9uemVybyIgZmlsbD0icmdiKDU3LjI1NTU1NCUsIDU2Ljg2MzQwMyUsIDU3LjI1NTU1NCUpIiBmaWxsLW9wYWNpdHk9IjEiIGQ9Ik0gNDguNDAyMzQ0IDEzMS45NDE0MDYgQyA1MC4wNjY0MDYgMTMxLjI2NTYyNSA1MS44OTQ1MzEgMTMxLjE3MTg3NSA1My42NzE4NzUgMTMxLjIzODI4MSBDIDU0LjYyODkwNiAxMzEuMzA0Njg4IDU1LjU5NzY1NiAxMzEuMzYzMjgxIDU2LjUzMTI1IDEzMS42MTMyODEgQyA1Ni45NDE0MDYgMTMxLjczMDQ2OSA1Ny4zODY3MTkgMTMxLjgxNjQwNiA1Ny43MTg3NSAxMzIuMTA1NDY5IEMgNTcuNTE5NTMxIDEzMi43ODkwNjIgNTcuMzk0NTMxIDEzMy40ODgyODEgNTcuMTc1NzgxIDEzNC4xNjAxNTYgQyA1Ny4xNTIzNDQgMTM0LjM3MTA5NCA1Ni44OTA2MjUgMTM0LjQ2NDg0NCA1Ni43MjI2NTYgMTM0LjM1NTQ2OSBDIDU0LjkwMjM0NCAxMzMuNjI4OTA2IDUyLjg3ODkwNiAxMzMuMzc4OTA2IDUwLjk0OTIxOSAxMzMuNzUzOTA2IEMgNTAuMDQ2ODc1IDEzMy45NDE0MDYgNDkuMTg3NSAxMzQuNTA3ODEyIDQ4Ljc5Njg3NSAxMzUuMzY3MTg4IEMgNDguMTc1NzgxIDEzNi42NTIzNDQgNDcuOTUzMTI1IDEzOC4wODIwMzEgNDcuNTU4NTk0IDEzOS40NDUzMTIgQyA0Ny4zNTkzNzUgMTQwLjI2MTcxOSA0Ny4xNjAxNTYgMTQxLjA3ODEyNSA0Ny4wMzkwNjIgMTQxLjkwNjI1IEMgNDYuOTQxNDA2IDE0Mi41ODIwMzEgNDcuMTAxNTYyIDE0My40MjU3ODEgNDcuNzkyOTY5IDE0My43MTg3NSBDIDQ4LjgxNjQwNiAxNDQuMTI1IDQ5Ljk0NTMxMiAxNDQuMDQyOTY5IDUxLjAyMzQzOCAxNDQuMDA3ODEyIEMgNTIuMzAwNzgxIDE0My45Njg3NSA1My41MjM0MzggMTQzLjU1ODU5NCA1NC43NTM5MDYgMTQzLjIzODI4MSBDIDU0LjgzOTg0NCAxNDMuNzkyOTY5IDU0LjUzNTE1NiAxNDQuMzA0Njg4IDU0LjQyOTY4OCAxNDQuODM1OTM4IEMgNTQuMzIwMzEyIDE0NS4xNDA2MjUgNTQuMzMyMDMxIDE0NS41MTk1MzEgNTQuMTA1NDY5IDE0NS43Njk1MzEgQyA1Mi4wNjY0MDYgMTQ2LjMyMDMxMiA0OS45Mjk2ODggMTQ2LjM5MDYyNSA0Ny44MjgxMjUgMTQ2LjMxNjQwNiBDIDQ2LjU2NjQwNiAxNDYuMjM0Mzc1IDQ1LjIyNjU2MiAxNDYuMDc4MTI1IDQ0LjE1NjI1IDE0NS4zMzk4NDQgQyA0My41NjI1IDE0NC45Mjk2ODggNDMuMTYwMTU2IDE0NC4yNjU2MjUgNDMuMDkzNzUgMTQzLjU0Njg3NSBDIDQyLjk2MDkzOCAxNDIuMzI4MTI1IDQzLjI4OTA2MiAxNDEuMTMyODEyIDQzLjU4NTkzOCAxMzkuOTYwOTM4IEMgNDQuMDE5NTMxIDEzOC4zMTY0MDYgNDQuNDIxODc1IDEzNi42NTYyNSA0NS4wNzAzMTIgMTM1LjA3ODEyNSBDIDQ1LjY3MTg3NSAxMzMuNjE3MTg4IDQ2Ljk1MzEyNSAxMzIuNTE5NTMxIDQ4LjQwMjM0NCAxMzEuOTQxNDA2ICIvPjxwYXRoIGZpbGwtcnVsZT0ibm9uemVybyIgZmlsbD0icmdiKDU3LjI1NTU1NCUsIDU2Ljg2MzQwMyUsIDU3LjI1NTU1NCUpIiBmaWxsLW9wYWNpdHk9IjEiIGQ9Ik0gNTkuMjM0Mzc1IDEzMS43NjU2MjUgQyA1OS4yNjU2MjUgMTMxLjU3NDIxOSA1OS40MjE4NzUgMTMxLjM3NSA1OS42MzI4MTIgMTMxLjM5ODQzOCBDIDYwLjY1NjI1IDEzMS4zNzg5MDYgNjEuNjc5Njg4IDEzMS4zNDc2NTYgNjIuNjk5MjE5IDEzMS4zODI4MTIgQyA2My4wNzgxMjUgMTMxLjQ0MTQwNiA2Mi44NjcxODggMTMxLjg5ODQzOCA2Mi44MTY0MDYgMTMyLjEzNjcxOSBDIDYyLjM2MzI4MSAxMzQuMTA5Mzc1IDYxLjgzOTg0NCAxMzYuMDY2NDA2IDYxLjMzOTg0NCAxMzguMDI3MzQ0IEMgNjIuMTI4OTA2IDEzNy4zMzk4NDQgNjIuODIwMzEyIDEzNi41NDY4NzUgNjMuNTg5ODQ0IDEzNS44MzU5MzggQyA2NS4xNDA2MjUgMTM0LjM4NjcxOSA2Ni41ODk4NDQgMTMyLjgyMDMxMiA2OC4yMTQ4NDQgMTMxLjQ1MzEyNSBDIDY5LjE5MTQwNiAxMzEuMjg5MDYyIDcwLjIwMzEyNSAxMzEuNDEwMTU2IDcxLjE5MTQwNiAxMzEuMzk4NDM4IEMgNzEuMzk4NDM4IDEzMS4zNjcxODggNzEuNjAxNTYyIDEzMS40MzM1OTQgNzEuNjc5Njg4IDEzMS42NDQ1MzEgQyA2OS40OTIxODggMTMzLjYzMjgxMiA2Ny4yMzQzNzUgMTM1LjU0Mjk2OSA2NS4xMDE1NjIgMTM3LjU4MjAzMSBDIDY2LjIzODI4MSAxNDAuMzI0MjE5IDY3LjQxNDA2MiAxNDMuMDQ2ODc1IDY4LjU4MjAzMSAxNDUuNzczNDM4IEMgNjguNjA1NDY5IDE0NS44OTg0MzggNjguNjAxNTYyIDE0Ni4wMjczNDQgNjguNTcwMzEyIDE0Ni4xNjAxNTYgQyA2Ny4zNzUgMTQ2LjE4NzUgNjYuMTc5Njg4IDE0Ni4xNzE4NzUgNjQuOTg4MjgxIDE0Ni4xNjQwNjIgQyA2NC43ODUxNTYgMTQ2LjE5MTQwNiA2NC42NjAxNTYgMTQ2IDY0LjU5Mzc1IDE0NS44Mzk4NDQgQyA2My44NDM3NSAxNDMuODM1OTM4IDYzLjA3NDIxOSAxNDEuODM5ODQ0IDYyLjMxMjUgMTM5Ljg0Mzc1IEMgNjEuNzYxNzE5IDE0MC4yNzczNDQgNjEuMjczNDM4IDE0MC43ODUxNTYgNjAuNzIyNjU2IDE0MS4yMTg3NSBDIDYwLjU3ODEyNSAxNDEuMzM5ODQ0IDYwLjM5NDUzMSAxNDEuNDYwOTM4IDYwLjM3NSAxNDEuNjcxODc1IEMgNjAuMDM1MTU2IDE0My4wNTg1OTQgNTkuNjc5Njg4IDE0NC40NDE0MDYgNTkuMzM5ODQ0IDE0NS44MzIwMzEgQyA1OS4zMDg1OTQgMTQ2LjA0Njg3NSA1OS4xMDU0NjkgMTQ2LjIxODc1IDU4Ljg4MjgxMiAxNDYuMTc1NzgxIEMgNTcuODA0Njg4IDE0Ni4xNjAxNTYgNTYuNzI2NTYyIDE0Ni4yMDMxMjUgNTUuNjUyMzQ0IDE0Ni4xNTYyNSBDIDU1LjYyODkwNiAxNDUuOTUzMTI1IDU1LjY0MDYyNSAxNDUuNzQ2MDk0IDU1LjcwMzEyNSAxNDUuNTU0Njg4IEMgNTYuNjI4OTA2IDE0Mi4xNjAxNTYgNTcuNDA2MjUgMTM4LjcyMjY1NiA1OC4zMzk4NDQgMTM1LjMzMjAzMSBDIDU4LjY0MDYyNSAxMzQuMTQ0NTMxIDU4LjkxNzk2OSAxMzIuOTQ5MjE5IDU5LjIzNDM3NSAxMzEuNzY1NjI1ICIvPjxwYXRoIGZpbGwtcnVsZT0ibm9uemVybyIgZmlsbD0icmdiKDU3LjI1NTU1NCUsIDU2Ljg2MzQwMyUsIDU3LjI1NTU1NCUpIiBmaWxsLW9wYWNpdHk9IjEiIGQ9Ik0gNzMuNTY2NDA2IDEzMS42MjUgQyA3My42OTUzMTIgMTMxLjUzOTA2MiA3My43OTY4NzUgMTMxLjM2NzE4OCA3My45Njg3NSAxMzEuMzc4OTA2IEMgNzUuNTc4MTI1IDEzMS4zNjcxODggNzcuMTg3NSAxMzEuMzY3MTg4IDc4LjgwMDc4MSAxMzEuMzY3MTg4IEMgODAuMTE3MTg4IDEzMS4zNzUgODEuNDY0ODQ0IDEzMS4zMDQ2ODggODIuNzUgMTMxLjY2MDE1NiBDIDgzLjQ4MDQ2OSAxMzEuODU5Mzc1IDg0LjE5NTMxMiAxMzIuMzI4MTI1IDg0LjQ0OTIxOSAxMzMuMDc0MjE5IEMgODQuOTQxNDA2IDEzNC4zNTE1NjIgODQuNDY4NzUgMTM1LjcxODc1IDg0LjA4NTkzOCAxMzYuOTUzMTI1IEMgODMuNzQ2MDk0IDEzOC4wNjI1IDgzLjEyMTA5NCAxMzkuMTM2NzE5IDgyLjA5NzY1NiAxMzkuNzM4MjgxIEMgODAuNzM4MjgxIDE0MC41NzAzMTIgNzkuMDg5ODQ0IDE0MC42NDg0MzggNzcuNTM1MTU2IDE0MC42MjEwOTQgQyA3Ni42NzU3ODEgMTQwLjYxNzE4OCA3NS44MTI1IDE0MC42NDA2MjUgNzQuOTUzMTI1IDE0MC42MjEwOTQgQyA3NC44MjQyMTkgMTQwLjg2NzE4OCA3NC43Njk1MzEgMTQxLjEzNjcxOSA3NC43MDcwMzEgMTQxLjM5ODQzOCBDIDc0LjM1NTQ2OSAxNDIuODc4OTA2IDczLjk2NDg0NCAxNDQuMzQ3NjU2IDczLjYwNTQ2OSAxNDUuODI0MjE5IEMgNzMuNTYyNSAxNDYuMDAzOTA2IDczLjQyNTc4MSAxNDYuMjE4NzUgNzMuMjE0ODQ0IDE0Ni4xNzU3ODEgQyA3Mi4xMzI4MTIgMTQ2LjE0ODQzOCA3MS4wNTQ2ODggMTQ2LjIyNjU2MiA2OS45NzY1NjIgMTQ2LjE0MDYyNSBDIDY5Ljk0MTQwNiAxNDUuNzUgNzAuMTEzMjgxIDE0NS4zOTA2MjUgNzAuMTk5MjE5IDE0NS4wMjM0MzggQyA3MS4zMTI1IDE0MC41NTQ2ODggNzIuNDY0ODQ0IDEzNi4wOTM3NSA3My41NjY0MDYgMTMxLjYyNSBaIE0gNzUuNTE1NjI1IDEzOC4yNSBDIDc2LjYxNzE4OCAxMzguMjUgNzcuNzE4NzUgMTM4LjI5Mjk2OSA3OC44MTY0MDYgMTM4LjE4NzUgQyA3OS43MzQzNzUgMTM4LjA5Mzc1IDgwLjQ2NDg0NCAxMzcuMzM5ODQ0IDgwLjcyNjU2MiAxMzYuNDg4MjgxIEMgODAuOTI1NzgxIDEzNS44MzIwMzEgODEuMTIxMDk0IDEzNS4xMjEwOTQgODAuOTY4NzUgMTM0LjQzNzUgQyA4MC44MTY0MDYgMTMzLjg5MDYyNSA4MC4xOTkyMTkgMTMzLjcyMjY1NiA3OS42OTkyMTkgMTMzLjY5NTMxMiBDIDc4LjY3OTY4OCAxMzMuNjU2MjUgNzcuNjU2MjUgMTMzLjY0NDUzMSA3Ni42MzY3MTkgMTMzLjY2NDA2MiBDIDc2LjIzMDQ2OSAxMzUuMTgzNTk0IDc1LjgzNTkzOCAxMzYuNzEwOTM4IDc1LjUxNTYyNSAxMzguMjUgIi8+PHBhdGggZmlsbC1ydWxlPSJub256ZXJvIiBmaWxsPSJyZ2IoNTcuMjU1NTU0JSwgNTYuODYzNDAzJSwgNTcuMjU1NTU0JSkiIGZpbGwtb3BhY2l0eT0iMSIgZD0iTSAxMTEuNzgxMjUgMTMzLjIzNDM3NSBDIDExMi4wODIwMzEgMTMyLjk4NDM3NSAxMTIuNDg0Mzc1IDEzMy4wNTg1OTQgMTEyLjg0NzY1NiAxMzMuMDUwNzgxIEMgMTE0LjYwNTQ2OSAxMzMuMDM1MTU2IDExNi4zNjMyODEgMTMzLjA3MDMxMiAxMTguMTIxMDk0IDEzMy4wMzkwNjIgQyAxMTguODgyODEyIDEzMy4wNDY4NzUgMTE5LjY2Nzk2OSAxMzMuMTA5Mzc1IDEyMC4zNzEwOTQgMTMzLjQxNzk2OSBDIDEyMC45OTIxODggMTMzLjY5OTIxOSAxMjEuNTUwNzgxIDEzNC4yNjk1MzEgMTIxLjU3ODEyNSAxMzQuOTgwNDY5IEMgMTIxLjY2MDE1NiAxMzYuMjQyMTg4IDEyMS4zMTY0MDYgMTM3LjUwMzkwNiAxMjAuNzY5NTMxIDEzOC42MzI4MTIgQyAxMjAuMjc3MzQ0IDEzOS42MDkzNzUgMTE5LjI1NzgxMiAxNDAuMTEzMjgxIDExOC4yNzM0MzggMTQwLjQ2MDkzOCBDIDExOC42Nzk2ODggMTQxLjM1NTQ2OSAxMTguODAwNzgxIDE0Mi4zNTE1NjIgMTE5LjA3ODEyNSAxNDMuMjkyOTY5IEMgMTE5LjMxMjUgMTQ0LjEyNSAxMTkuNTM5MDYyIDE0NC45NjA5MzggMTE5Ljc1IDE0NS43OTY4NzUgQyAxMTkuNzk2ODc1IDE0NS45OTYwOTQgMTE5Ljc5Mjk2OSAxNDYuMTk5MjE5IDExOS43NTc4MTIgMTQ2LjQwMjM0NCBDIDExOC44Nzg5MDYgMTQ2LjQyNTc4MSAxMTcuOTk2MDk0IDE0Ni40MTQwNjIgMTE3LjExMzI4MSAxNDYuNDI1NzgxIEMgMTE2Ljk4ODI4MSAxNDYuNDE3OTY5IDExNi44MDg1OTQgMTQ2LjQzNzUgMTE2LjczODI4MSAxNDYuMzA4NTk0IEMgMTE2LjMyNDIxOSAxNDQuNTQyOTY5IDExNS45NjQ4NDQgMTQyLjc2MTcxOSAxMTUuNTkzNzUgMTQwLjk4ODI4MSBDIDExNS41NjY0MDYgMTQwLjc0NjA5NCAxMTUuMjY5NTMxIDE0MC43NzczNDQgMTE1LjA5Mzc1IDE0MC43NjE3MTkgQyAxMTQuMzcxMDk0IDE0MC43NTM5MDYgMTEzLjY0NDUzMSAxNDAuNzE4NzUgMTEyLjkyMTg3NSAxNDAuNzc3MzQ0IEMgMTEyLjUgMTQyLjU1ODU5NCAxMTIuMDY2NDA2IDE0NC4zMzU5MzggMTExLjY0NDUzMSAxNDYuMTE3MTg4IEMgMTExLjYxMzI4MSAxNDYuMjg5MDYyIDExMS40NDE0MDYgMTQ2LjQzNzUgMTExLjI2NTYyNSAxNDYuNDI5Njg4IEMgMTEwLjQ4MDQ2OSAxNDYuNDIxODc1IDEwOS42OTE0MDYgMTQ2LjQyNTc4MSAxMDguOTA2MjUgMTQ2LjQxNDA2MiBDIDEwOC42NzU3ODEgMTQ2LjQzNzUgMTA4LjY0NDUzMSAxNDYuMTYwMTU2IDEwOC43MTA5MzggMTQ2IEMgMTA5LjcxNDg0NCAxNDEuNzM4MjgxIDExMC43NjU2MjUgMTM3LjQ5MjE4OCAxMTEuNzgxMjUgMTMzLjIzNDM3NSBaIE0gMTE0LjI0MjE4OCAxMzUuMDg1OTM4IEMgMTEzLjk3NjU2MiAxMzYuMzIwMzEyIDExMy43MjI2NTYgMTM3LjU1NDY4OCAxMTMuNDA2MjUgMTM4Ljc3MzQzOCBDIDExNC4xOTE0MDYgMTM4LjgwMDc4MSAxMTQuOTgwNDY5IDEzOC43ODkwNjIgMTE1Ljc2NTYyNSAxMzguNzg1MTU2IEMgMTE2LjQyOTY4OCAxMzguNzk2ODc1IDExNy4xNjc5NjkgMTM4LjcyMjY1NiAxMTcuNjk1MzEyIDEzOC4yNjk1MzEgQyAxMTguMTcxODc1IDEzNy44NTkzNzUgMTE4LjI1NzgxMiAxMzcuMjA3MDMxIDExOC4zOTQ1MzEgMTM2LjYyODkwNiBDIDExOC40NTMxMjUgMTM2LjIxNDg0NCAxMTguNTE1NjI1IDEzNS43MDcwMzEgMTE4LjE4NzUgMTM1LjM4MjgxMiBDIDExNy44MzIwMzEgMTM1LjA3ODEyNSAxMTcuMzI4MTI1IDEzNS4wNzQyMTkgMTE2Ljg4NjcxOSAxMzUuMDU4NTk0IEMgMTE2LjAwMzkwNiAxMzUuMDY2NDA2IDExNS4xMjUgMTM1LjA1NDY4OCAxMTQuMjQyMTg4IDEzNS4wODU5MzggIi8+PHBhdGggZmlsbC1ydWxlPSJub256ZXJvIiBmaWxsPSJyZ2IoNTcuMjU1NTU0JSwgNTYuODYzNDAzJSwgNTcuMjU1NTU0JSkiIGZpbGwtb3BhY2l0eT0iMSIgZD0iTSAxMzYuMzY3MTg4IDEzMy4yNDIxODggQyAxMzcuMDMxMjUgMTMzLjE2MDE1NiAxMzcuNjk5MjE5IDEzMy4xMDE1NjIgMTM4LjM2NzE4OCAxMzMuMTA5Mzc1IEMgMTM4LjU1NDY4OCAxMzMuMTIxMDk0IDEzOC44MzU5MzggMTMzLjAzOTA2MiAxMzguODk0NTMxIDEzMy4yODkwNjIgQyAxMzguNzczNDM4IDEzNC4yNDIxODggMTM4LjQ0MTQwNiAxMzUuMTUyMzQ0IDEzOC4yOTY4NzUgMTM2LjEwMTU2MiBDIDEzOS4xNDA2MjUgMTM2LjExNzE4OCAxMzkuOTkyMTg4IDEzNi4wNTg1OTQgMTQwLjgzNTkzOCAxMzYuMTQwNjI1IEMgMTQwLjc4OTA2MiAxMzYuNzczNDM4IDE0MC42MDU0NjkgMTM3LjM3ODkwNiAxNDAuNDYwOTM4IDEzNy45OTIxODggQyAxMzkuNjA1NDY5IDEzOC4wNjY0MDYgMTM4Ljc0MjE4OCAxMzcuOTcyNjU2IDEzNy44ODI4MTIgMTM4LjAwNzgxMiBDIDEzNy40NDUzMTIgMTM5LjcyNjU2MiAxMzcuMDg5ODQ0IDE0MS40Njg3NSAxMzYuNjQ4NDM4IDE0My4xODc1IEMgMTM2LjU3ODEyNSAxNDMuNTg5ODQ0IDEzNi4zMjgxMjUgMTQ0LjE5NTMxMiAxMzYuODIwMzEyIDE0NC40MjE4NzUgQyAxMzcuNDcyNjU2IDE0NC42MjEwOTQgMTM4LjE2Nzk2OSAxNDQuNDE0MDYyIDEzOC44MzIwMzEgMTQ0LjQyNTc4MSBDIDEzOS4wMjczNDQgMTQ0LjcwNzAzMSAxMzguODA4NTk0IDE0NS4wNzQyMTkgMTM4Ljc5Mjk2OSAxNDUuMzgyODEyIEMgMTM4LjY4NzUgMTQ1LjY3OTY4OCAxMzguNzQ2MDk0IDE0Ni4xMDkzNzUgMTM4LjQ2NDg0NCAxNDYuMzAwNzgxIEMgMTM3LjM2MzI4MSAxNDYuNTE1NjI1IDEzNi4yMTA5MzggMTQ2LjYwOTM3NSAxMzUuMTAxNTYyIDE0Ni40MTc5NjkgQyAxMzQuNTM5MDYyIDE0Ni4zMjgxMjUgMTMzLjk3NjU2MiAxNDYuMDIzNDM4IDEzMy43MzQzNzUgMTQ1LjQ4ODI4MSBDIDEzMy40ODQzNzUgMTQ0Ljk3MjY1NiAxMzMuNTM5MDYyIDE0NC4zNzEwOTQgMTMzLjYyODkwNiAxNDMuODI0MjE5IEMgMTM0LjA1MDc4MSAxNDEuODgyODEyIDEzNC41MzEyNSAxMzkuOTUzMTI1IDEzNC45NTMxMjUgMTM4LjAxMTcxOSBDIDEzNC41MzUxNTYgMTM3Ljk3MjY1NiAxMzQuMDkzNzUgMTM4LjA3MDMxMiAxMzMuNjg3NSAxMzcuOTY0ODQ0IEMgMTMzLjUyMzQzOCAxMzcuNzE0ODQ0IDEzMy43NTM5MDYgMTM3LjM5NDUzMSAxMzMuNzgxMjUgMTM3LjEyMTA5NCBDIDEzMy45MTAxNTYgMTM2LjgwNDY4OCAxMzMuODEyNSAxMzYuMzU1NDY5IDEzNC4xMzI4MTIgMTM2LjE0ODQzOCBDIDEzNC41NTQ2ODggMTM2LjA3MDMxMiAxMzQuOTk2MDk0IDEzNi4xNTYyNSAxMzUuNDE3OTY5IDEzNi4wNzQyMTkgQyAxMzUuNjMyODEyIDEzNS4xOTUzMTIgMTM1LjgzMjAzMSAxMzQuMzA4NTk0IDEzNS45OTIxODggMTMzLjQxNDA2MiBDIDEzNi4xMDU0NjkgMTMzLjM0Mzc1IDEzNi4yMTg3NSAxMzMuMjQyMTg4IDEzNi4zNjcxODggMTMzLjI0MjE4OCAiLz48cGF0aCBmaWxsLXJ1bGU9Im5vbnplcm8iIGZpbGw9InJnYig1Ny4yNTU1NTQlLCA1Ni44NjM0MDMlLCA1Ny4yNTU1NTQlKSIgZmlsbC1vcGFjaXR5PSIxIiBkPSJNIDE2Mi44MDA3ODEgMTMzLjMxMjUgQyAxNjIuOTE3OTY5IDEzMy4xOTUzMTIgMTYzLjA0Njg3NSAxMzMuMDM5MDYyIDE2My4yMzQzNzUgMTMzLjA1MDc4MSBDIDE2NC40NzI2NTYgMTMzLjAzNTE1NiAxNjUuNzE0ODQ0IDEzMy4wNTA3ODEgMTY2Ljk1NzAzMSAxMzMuMDU4NTk0IEMgMTY2Ljk5NjA5NCAxMzMuMTE3MTg4IDE2Ny4wNzQyMTkgMTMzLjIzODI4MSAxNjcuMTEzMjgxIDEzMy4yOTY4NzUgQyAxNjYuNDgwNDY5IDEzNi4wMzEyNSAxNjUuNzc3MzQ0IDEzOC43NTM5MDYgMTY1LjE0ODQzOCAxNDEuNDg4MjgxIEMgMTY1LjYxNzE4OCAxNDEuNTYyNSAxNjYuMTY0MDYyIDE0MS4zNTE1NjIgMTY2LjU3NDIxOSAxNDEuNjE3MTg4IEMgMTY2LjUzNTE1NiAxNDIuMTE3MTg4IDE2Ni4zNzUgMTQyLjYwMTU2MiAxNjYuMjY5NTMxIDE0My4wOTM3NSBDIDE2Ni4yMTg3NSAxNDMuMjQ2MDk0IDE2Ni4yMTg3NSAxNDMuNDU3MDMxIDE2Ni4wMjczNDQgMTQzLjUwMzkwNiBDIDE2NS41NjI1IDE0My41ODk4NDQgMTY1LjA4NTkzOCAxNDMuNTI3MzQ0IDE2NC42MTcxODggMTQzLjU2MjUgQyAxNjQuMzkwNjI1IDE0NC40NDUzMTIgMTY0LjIxMDkzOCAxNDUuMzM1OTM4IDE2My45OTIxODggMTQ2LjIxODc1IEMgMTYzLjk2MDkzOCAxNDYuMzU1NDY5IDE2My44MTI1IDE0Ni40MjU3ODEgMTYzLjY4NzUgMTQ2LjQyMTg3NSBDIDE2Mi44NzEwOTQgMTQ2LjQzNzUgMTYyLjA1NDY4OCAxNDYuNDA2MjUgMTYxLjIzODI4MSAxNDYuNDI5Njg4IEMgMTYxLjE5NTMxMiAxNDYuMzgyODEyIDE2MS4xMDkzNzUgMTQ2LjI4NTE1NiAxNjEuMDY2NDA2IDE0Ni4yMzgyODEgQyAxNjEuMjkyOTY5IDE0NS4zNTU0NjkgMTYxLjQ4NDM3NSAxNDQuNDU3MDMxIDE2MS42NTIzNDQgMTQzLjU1ODU5NCBDIDE2MS4wNTQ2ODggMTQzLjQ4NDM3NSAxNjAuNDU3MDMxIDE0My41NjY0MDYgMTU5Ljg1OTM3NSAxNDMuNTUwNzgxIEMgMTU4LjUwNzgxMiAxNDMuNTQyOTY5IDE1Ny4xNjAxNTYgMTQzLjU1MDc4MSAxNTUuODEyNSAxNDMuNTQ2ODc1IEMgMTU1LjYxMzI4MSAxNDMuNTgyMDMxIDE1NS4zNzUgMTQzLjQ1MzEyNSAxNTUuNDcyNjU2IDE0My4yMzA0NjkgQyAxNTUuNjQ4NDM4IDE0Mi40Mjk2ODggMTU1LjcyNjU2MiAxNDEuNTkzNzUgMTU2LjAxOTUzMSAxNDAuODI0MjE5IEMgMTU3LjI4NTE1NiAxMzkuMzUxNTYyIDE1OC41OTc2NTYgMTM3LjkxNzk2OSAxNTkuODgyODEyIDEzNi40NTcwMzEgQyAxNjAuODcxMDk0IDEzNS40MjU3ODEgMTYxLjgzNTkzOCAxMzQuMzY3MTg4IDE2Mi44MDA3ODEgMTMzLjMxMjUgWiBNIDE2Mi44ODI4MTIgMTM2LjIwMzEyNSBDIDE2MS41OTc2NTYgMTM3LjY1NjI1IDE2MC4yNjE3MTkgMTM5LjA2MjUgMTU5LjAxMTcxOSAxNDAuNTQyOTY5IEMgMTU4Ljc1IDE0MC44MzU5MzggMTU4LjQ1MzEyNSAxNDEuMTA1NDY5IDE1OC4yNzczNDQgMTQxLjQ2MDkzOCBDIDE1OS41OTc2NTYgMTQxLjQ3NjU2MiAxNjAuOTIxODc1IDE0MS40OTIxODggMTYyLjI0NjA5NCAxNDEuNDQ1MzEyIEMgMTYyLjY5MTQwNiAxMzkuMzgyODEyIDE2My4yNjU2MjUgMTM3LjM1MTU2MiAxNjMuNzM0Mzc1IDEzNS4yOTI5NjkgQyAxNjMuNDM3NSAxMzUuNTgyMDMxIDE2My4xNjAxNTYgMTM1Ljg5NDUzMSAxNjIuODgyODEyIDEzNi4yMDMxMjUgIi8+PHBhdGggZmlsbC1ydWxlPSJub256ZXJvIiBmaWxsPSJyZ2IoNTcuMjU1NTU0JSwgNTYuODYzNDAzJSwgNTcuMjU1NTU0JSkiIGZpbGwtb3BhY2l0eT0iMSIgZD0iTSAxNzMuMDg1OTM4IDEzMy4xNjAxNTYgQyAxNzQuMzMyMDMxIDEzMi45NzY1NjIgMTc1LjYwMTU2MiAxMzMuMDU4NTk0IDE3Ni44NDc2NTYgMTMzLjE5OTIxOSBDIDE3Ny45MDYyNSAxMzMuMzIwMzEyIDE3OC45MzM1OTQgMTM0LjAxNTYyNSAxNzkuMjEwOTM4IDEzNS4wODU5MzggQyAxNzkuMzc4OTA2IDEzNS45MjE4NzUgMTc5LjMxNjQwNiAxMzYuODA0Njg4IDE3OS4xMTcxODggMTM3LjYzMjgxMiBDIDE3OC43NTc4MTIgMTM5LjMwMDc4MSAxNzguMzc4OTA2IDE0MC45Njg3NSAxNzcuOTUzMTI1IDE0Mi42MjEwOTQgQyAxNzcuNzI2NTYyIDE0My41NzQyMTkgMTc3LjI4OTA2MiAxNDQuNDk2MDk0IDE3Ni41ODU5MzggMTQ1LjE5MTQwNiBDIDE3Ni4wNzAzMTIgMTQ1LjczNDM3NSAxNzUuMzcxMDk0IDE0Ni4wNTA3ODEgMTc0LjY3MTg3NSAxNDYuMjY5NTMxIEMgMTczLjUxMTcxOSAxNDYuNTgyMDMxIDE3Mi4yOTY4NzUgMTQ2LjUzNTE1NiAxNzEuMTA5Mzc1IDE0Ni41MjczNDQgQyAxNzAuMDcwMzEyIDE0Ni40NzY1NjIgMTY4LjkxNzk2OSAxNDYuMjUzOTA2IDE2OC4yMDMxMjUgMTQ1LjQyOTY4OCBDIDE2Ny41NzAzMTIgMTQ0LjY1NjI1IDE2Ny42MjUgMTQzLjU3NDIxOSAxNjcuNzg5MDYyIDE0Mi42NDg0MzggQyAxNjguMTA1NDY5IDE0MS4xMDE1NjIgMTY4LjQ2NDg0NCAxMzkuNTY2NDA2IDE2OC44MjQyMTkgMTM4LjAzMTI1IEMgMTY5LjEyODkwNiAxMzYuOTAyMzQ0IDE2OS4zMjgxMjUgMTM1LjY4MzU5NCAxNzAuMDgyMDMxIDEzNC43NSBDIDE3MC44MDg1OTQgMTMzLjgyODEyNSAxNzEuOTM3NSAxMzMuMzEyNSAxNzMuMDg1OTM4IDEzMy4xNjAxNTYgWiBNIDE3My43NTc4MTIgMTM1LjE2Nzk2OSBDIDE3Mi45ODgyODEgMTM1LjI5Mjk2OSAxNzIuMzA4NTk0IDEzNS44OTQ1MzEgMTcyLjEyODkwNiAxMzYuNjYwMTU2IEMgMTcxLjYyMTA5NCAxMzguNjQ0NTMxIDE3MS4xOTkyMTkgMTQwLjY0ODQzOCAxNzAuNzM4MjgxIDE0Mi42NDQ1MzEgQyAxNzAuNjI4OTA2IDE0My4xOTkyMTkgMTcwLjU4NTkzOCAxNDMuOTcyNjU2IDE3MS4xODM1OTQgMTQ0LjI2NTYyNSBDIDE3MS44MjAzMTIgMTQ0LjU1NDY4OCAxNzIuNTU0Njg4IDE0NC40NzY1NjIgMTczLjIzMDQ2OSAxNDQuNDA2MjUgQyAxNzQuMDg5ODQ0IDE0NC4zMDQ2ODggMTc0LjcxMDkzOCAxNDMuNTU4NTk0IDE3NC45MjU3ODEgMTQyLjc2MTcxOSBDIDE3NS40MzM1OTQgMTQwLjg5ODQzOCAxNzUuODM1OTM4IDEzOS4wMDc4MTIgMTc2LjI5Mjk2OSAxMzcuMTMyODEyIEMgMTc2LjQyMTg3NSAxMzYuNTE1NjI1IDE3Ni40NTMxMjUgMTM1LjY5MTQwNiAxNzUuODI4MTI1IDEzNS4zMjgxMjUgQyAxNzUuMTg3NSAxMzUuMDM1MTU2IDE3NC40NDE0MDYgMTM1LjEwNTQ2OSAxNzMuNzU3ODEyIDEzNS4xNjc5NjkgIi8+PHBhdGggZmlsbC1ydWxlPSJub256ZXJvIiBmaWxsPSJyZ2IoNTcuMjU1NTU0JSwgNTYuODYzNDAzJSwgNTcuMjU1NTU0JSkiIGZpbGwtb3BhY2l0eT0iMSIgZD0iTSAxNDQuMDU0Njg4IDEzNi4xODc1IEMgMTQ1LjU5Mzc1IDEzNS45MTAxNTYgMTQ3LjE4NzUgMTM1Ljg1OTM3NSAxNDguNzMwNDY5IDEzNi4xMTcxODggQyAxNDkuNDY4NzUgMTM2LjIzODI4MSAxNTAuMjQ2MDk0IDEzNi42MjUgMTUwLjUyMzQzOCAxMzcuMzYzMjgxIEMgMTUwLjkwMjM0NCAxMzguMjMwNDY5IDE1MC41NzQyMTkgMTM5LjE3MTg3NSAxNTAuNDA2MjUgMTQwLjA0Njg3NSBDIDE0OS44ODY3MTkgMTQyLjE1NjI1IDE0OS40MjE4NzUgMTQ0LjI4MTI1IDE0OC44NzEwOTQgMTQ2LjM3ODkwNiBDIDE0OC4xMDU0NjkgMTQ2LjQ4MDQ2OSAxNDcuMzE2NDA2IDE0Ni4zODY3MTkgMTQ2LjU0Mjk2OSAxNDYuNDAyMzQ0IEMgMTQ2LjM1NTQ2OSAxNDYuMDY2NDA2IDE0Ni41NTg1OTQgMTQ1LjY5MTQwNiAxNDYuNTU4NTk0IDE0NS4zMzU5MzggQyAxNDUuNjA5Mzc1IDE0Ni4wNzgxMjUgMTQ0LjQxNzk2OSAxNDYuNSAxNDMuMjEwOTM4IDE0Ni41MTE3MTkgQyAxNDIuNDAyMzQ0IDE0Ni41MjM0MzggMTQxLjUxNTYyNSAxNDYuNTI3MzQ0IDE0MC44MjgxMjUgMTQ2LjAzNTE1NiBDIDE0MC4xMjEwOTQgMTQ1LjU4OTg0NCAxMzkuOTI1NzgxIDE0NC42NTIzNDQgMTQwLjA5Mzc1IDE0My44Nzg5MDYgQyAxNDAuMjY1NjI1IDE0Mi44MjgxMjUgMTQwLjUzMTI1IDE0MS42NTIzNDQgMTQxLjQxNzk2OSAxNDAuOTU3MDMxIEMgMTQyLjA2MjUgMTQwLjM4NjcxOSAxNDIuOTMzNTk0IDE0MC4xOTkyMTkgMTQzLjc2NTYyNSAxNDAuMDg5ODQ0IEMgMTQ1LjAyNzM0NCAxMzkuOTE0MDYyIDE0Ni4yOTI5NjkgMTQwLjEwMTU2MiAxNDcuNTU4NTk0IDE0MC4xNDg0MzggQyAxNDcuNjI1IDEzOS41NTQ2ODggMTQ3Ljk3NjU2MiAxMzguODgyODEyIDE0Ny42MzI4MTIgMTM4LjMxNjQwNiBDIDE0Ny4xNzk2ODggMTM3Ljg5MDYyNSAxNDYuNDkyMTg4IDEzNy45NjA5MzggMTQ1LjkxNzk2OSAxMzcuOTM3NSBDIDE0NC44MDA3ODEgMTM3Ljg5ODQzOCAxNDMuNjk1MzEyIDEzOC4xMDE1NjIgMTQyLjYyNSAxMzguNDEwMTU2IEMgMTQyLjQzMzU5NCAxMzguNDkyMTg4IDE0Mi40NDE0MDYgMTM4LjI1IDE0Mi40NzI2NTYgMTM4LjEzMjgxMiBDIDE0Mi41NjY0MDYgMTM3LjU5Mzc1IDE0Mi43MTQ4NDQgMTM3LjA2NjQwNiAxNDIuODI0MjE5IDEzNi41MzEyNSBDIDE0My4xOTkyMTkgMTM2LjMxNjQwNiAxNDMuNjMyODEyIDEzNi4yNjU2MjUgMTQ0LjA1NDY4OCAxMzYuMTg3NSBaIE0gMTQ0LjUzOTA2MiAxNDEuNzkyOTY5IEMgMTQ0LjAxOTUzMSAxNDEuODI4MTI1IDE0My40NzI2NTYgMTQyLjA3MDMxMiAxNDMuMjQyMTg4IDE0Mi41NjI1IEMgMTQzLjAzNTE1NiAxNDMuMDAzOTA2IDE0Mi44OTA2MjUgMTQzLjQ5NjA5NCAxNDIuOTQ1MzEyIDE0My45ODgyODEgQyAxNDMuMDAzOTA2IDE0NC40MzM1OTQgMTQzLjUwNzgxMiAxNDQuNTY2NDA2IDE0My44ODY3MTkgMTQ0LjU4NTkzOCBDIDE0NC44NjcxODggMTQ0LjYyODkwNiAxNDUuOTU3MDMxIDE0NC40NTcwMzEgMTQ2LjY4NzUgMTQzLjc1IEMgMTQ2LjkyNTc4MSAxNDMuMTIxMDk0IDE0Ny4wMzkwNjIgMTQyLjQzMzU5NCAxNDcuMTY0MDYyIDE0MS43Njk1MzEgQyAxNDYuMjg5MDYyIDE0MS43NTc4MTIgMTQ1LjQxMDE1NiAxNDEuNzMwNDY5IDE0NC41MzkwNjIgMTQxLjc5Mjk2OSAiLz48cGF0aCBmaWxsLXJ1bGU9Im5vbnplcm8iIGZpbGw9InJnYig1Ny4yNTU1NTQlLCA1Ni44NjM0MDMlLCA1Ny4yNTU1NTQlKSIgZmlsbC1vcGFjaXR5PSIxIiBkPSJNIDEyMy4yNTc4MTIgMTM2LjU2MjUgQyAxMjMuMjgxMjUgMTM2LjM2NzE4OCAxMjMuNDEwMTU2IDEzNi4xMDkzNzUgMTIzLjY0MDYyNSAxMzYuMTIxMDk0IEMgMTI0LjM5ODQzOCAxMzYuMTE3MTg4IDEyNS4xNjAxNTYgMTM2LjA3ODEyNSAxMjUuOTE3OTY5IDEzNi4xMDE1NjIgQyAxMjYuMDc0MjE5IDEzNi4xMDkzNzUgMTI2LjIxNDg0NCAxMzYuMjg1MTU2IDEyNi4xMzY3MTkgMTM2LjQ0MTQwNiBDIDEyNS41ODU5MzggMTM4Ljc2OTUzMSAxMjUuMDM5MDYyIDE0MS4wOTc2NTYgMTI0LjUyNzM0NCAxNDMuNDMzNTk0IEMgMTI0LjM3MTA5NCAxNDMuOTE3OTY5IDEyNC42ODM1OTQgMTQ0LjQ2ODc1IDEyNS4yMDMxMjUgMTQ0LjUxOTUzMSBDIDEyNi4yNTc4MTIgMTQ0LjY1NjI1IDEyNy40MjE4NzUgMTQ0LjMzOTg0NCAxMjguMTc1NzgxIDE0My41NzAzMTIgQyAxMjguNDM3NSAxNDIuOTU3MDMxIDEyOC41MTE3MTkgMTQyLjI3NzM0NCAxMjguNjcxODc1IDE0MS42MzI4MTIgQyAxMjkgMTQwLjA0Njg3NSAxMjkuNDA2MjUgMTM4LjQ3NjU2MiAxMjkuNzQyMTg4IDEzNi44OTQ1MzEgQyAxMjkuODI0MjE5IDEzNi42MDkzNzUgMTI5Ljc5Njg3NSAxMzYuMTg3NSAxMzAuMTY3OTY5IDEzNi4xMTMyODEgQyAxMzAuNzY1NjI1IDEzNi4wNzQyMTkgMTMxLjM2NzE4OCAxMzYuMTEzMjgxIDEzMS45NjQ4NDQgMTM2LjA5NzY1NiBDIDEzMi4xOTkyMTkgMTM2LjEwOTM3NSAxMzIuNDYwOTM4IDEzNi4wNTA3ODEgMTMyLjY2NDA2MiAxMzYuMTk5MjE5IEMgMTMyLjc1NzgxMiAxMzYuNDI1NzgxIDEzMi42MTMyODEgMTM2LjY1NjI1IDEzMi41ODIwMzEgMTM2Ljg4MjgxMiBDIDEzMS45MzM1OTQgMTQwLjAwMzkwNiAxMzEuMTA5Mzc1IDE0My4wODk4NDQgMTMwLjQ2MDkzOCAxNDYuMjEwOTM4IEMgMTMwLjQzMzU5NCAxNDYuNDY4NzUgMTMwLjEyNSAxNDYuNDE3OTY5IDEyOS45NDUzMTIgMTQ2LjQyNTc4MSBDIDEyOS4yOTI5NjkgMTQ2LjM5NDUzMSAxMjguNjI4OTA2IDE0Ni40NzI2NTYgMTI3Ljk4NDM3NSAxNDYuMzk4NDM4IEMgMTI3Ljc0NjA5NCAxNDYuMDc0MjE5IDEyOC4wMzkwNjIgMTQ1LjYyODkwNiAxMjguMDM1MTU2IDE0NS4yNjE3MTkgQyAxMjcuMTY0MDYyIDE0NS45NTcwMzEgMTI2LjEwMTU2MiAxNDYuNDEwMTU2IDEyNC45ODQzNzUgMTQ2LjQ5MjE4OCBDIDEyNC4wMTU2MjUgMTQ2LjU1ODU5NCAxMjIuOTI5Njg4IDE0Ni41NjY0MDYgMTIyLjEyMTA5NCAxNDUuOTQ1MzEyIEMgMTIxLjQ2MDkzOCAxNDUuNDMzNTk0IDEyMS40OTIxODggMTQ0LjQ4ODI4MSAxMjEuNjAxNTYyIDE0My43NDIxODggQyAxMjIuMDk3NjU2IDE0MS4zMzU5MzggMTIyLjc1MzkwNiAxMzguOTY0ODQ0IDEyMy4yNTc4MTIgMTM2LjU2MjUgIi8+PC9zdmc+Cg==';
+const PLANTILLA_VIEJA = `Hola {cliente}! Te escribimos de {taller}.
+Tu {vehiculo} (patente {patente}) ya está listo para retirar.
+
+Trabajos realizados:
+{trabajos}
+
+Total: {total}
+
+Te esperamos en {direccion}. ¡Gracias por confiar en nosotros!`;
+const PLANTILLA_DEFECTO =
+`Hola {cliente}! Te escribimos de {taller}.
+Tu {vehiculo} (patente {patente}) ya está listo para retirar.
+
+Trabajos realizados:
+{trabajos}
+
+Total: {total}
+
+Podés retirarlo en {direccion}.
+Horario: {horario}.
+¡Gracias por confiar en nosotros!`;
+
+const PLANTILLA_PRESUPUESTO = 'Hola {cliente}! Te escribimos de {taller}.\nYa revisamos tu {vehiculo} (patente {patente}). Este es el presupuesto:\n\n{trabajos}\n\nTotal: {total}\n\n¿Nos confirmás si lo aprobás así arrancamos con el trabajo? Cualquier duda, respondé este mensaje.';
+const PLANTILLA_DEMORA =
+`Hola {cliente}! Te escribimos de {taller}.
+Queríamos avisarte que tu {vehiculo} (patente {patente}) va a tener que quedarse un poco más de tiempo en el taller.
+
+Apenas esté listo te avisamos por acá. ¡Gracias por la paciencia!`;
+
+/* ---------- Utilidades ---------- */
+const $ = (s, el=document) => el.querySelector(s);
+const $$ = (s, el=document) => [...el.querySelectorAll(s)];
+const uid = () => Math.random().toString(36).slice(2,8) + Date.now().toString(36).slice(-5);
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pesos = new Intl.NumberFormat('es-AR', {style:'currency', currency:'ARS', maximumFractionDigits:0});
+const plata = (n) => pesos.format(Number(n)||0);
+const miles = (n) => new Intl.NumberFormat('es-AR').format(Number(n)||0);
+const TZ = 'America/Argentina/Buenos_Aires';
+const fecha = (iso) => iso ? new Date(iso).toLocaleDateString('es-AR',{timeZone:TZ,day:'2-digit',month:'2-digit',year:'numeric'}) : '—';
+const fechaHora = (iso) => iso ? new Date(iso).toLocaleString('es-AR',{timeZone:TZ,day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:false}) : '—';
+const diasAtras = (n) => new Date(Date.now() - n*86400000).toISOString();
+const diasDesde = (iso) => Math.floor((Date.now() - new Date(iso).getTime())/86400000);
+const hace = (iso) => { const d = diasDesde(iso); return d<=0 ? 'hoy' : d===1 ? 'hace 1 día' : `hace ${d} días`; };
+const normPatente = (s) => String(s||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
+const sinAcentos = (s) => String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase();
+const isoDia = (iso) => iso ? new Date(iso).toISOString().slice(0,10) : '';
+
+/* Íconos (trazos simples, sin dependencias) */
+const IC = {
+  taller:'<path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.4-.6-.6-2.4z"/>',
+  auto:'<path d="M3 13l2-6h14l2 6v5H3z"/><path d="M3 13h18"/><circle cx="7.5" cy="15.5" r="1"/><circle cx="16.5" cy="15.5" r="1"/><path d="M5 18v2M19 18v2"/>',
+  clientes:'<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/>',
+  service:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/>',
+  ajustes:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>',
+  mas:'<path d="M12 5v14M5 12h14"/>',
+  buscar:'<circle cx="11" cy="11" r="7"/><path d="M21 21l-5-5"/>',
+  atras:'<path d="M15 18l-6-6 6-6"/>',
+  imprimir:'<path d="M6 9V3h12v6"/><path d="M6 18H4v-7h16v7h-2"/><path d="M6 14h12v7H6z"/>',
+  borrar:'<path d="M3 6h18M8 6V4h8v2M6 6l1 15h10l1-15"/>',
+  editar:'<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/>',
+  camara:'<path d="M3 8h4l2-3h6l2 3h4v12H3z"/><circle cx="12" cy="13" r="4"/>',
+  candado:'<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
+  wa:'<path d="M3 21l1.7-4.8A8.5 8.5 0 1 1 8 19.6z"/><path d="M9 9.5c0 3 2.5 5.5 5.5 5.5l1-1.5-2-1-1 .8a4 4 0 0 1-2-2l.8-1-1-2z"/>',
+  web:'<rect x="2" y="4" width="20" height="14" rx="2"/><path d="M8 21h8M12 18v3"/>',
+  cerrar:'<path d="M18 6L6 18M6 6l12 12"/>',
+  descargar:'<path d="M12 3v12M7 10l5 5 5-5M4 21h16"/>',
+  reset:'<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/>',
+  check:'<path d="M5 12l5 5L20 7"/>',
+  reloj:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  pin:'<path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/>',
+  historial:'<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l3 2"/>',
+  hoja:'<path d="M14 3H6v18h12V7z"/><path d="M14 3v4h4M9 12h6M9 16h6"/>',
+  alerta:'<path d="M12 3l10 18H2z"/><path d="M12 10v5M12 18h.01"/>',
+  filtro:'<path d="M3 5h18l-7 8v6l-4 2v-8z"/>',
+  mensaje:'<path d="M4 5h16v11H8l-4 4z"/><path d="M8 9h8M8 12h5"/>'
+};
+const ico = (n, extra='') => `<svg class="i" viewBox="0 0 24 24" aria-hidden="true" ${extra}>${IC[n]||''}</svg>`;
+
+/* ---------- WhatsApp: normalizar número argentino ----------
+   Acepta "2972 412345", "02972 15412345", "+54 9 2972 412345", etc.
+   Devuelve "549XXXXXXXXXX" (13 dígitos) o null si no es válido. */
+function normalizarWA(tel){
+  let d = String(tel||'').replace(/\D/g,'');
+  if (!d) return null;
+  if (d.startsWith('549') && d.length === 13) return d;
+  if (d.startsWith('54')) { d = d.slice(2); if (d.startsWith('9')) d = d.slice(1); }
+  if (d.startsWith('0')) d = d.slice(1);
+  if (d.length === 12) {               // tiene el "15" después del código de área
+    for (const largo of [4,3,2]) {
+      if (d.substr(largo,2) === '15') { d = d.slice(0,largo) + d.slice(largo+2); break; }
+    }
+  }
+  return d.length === 10 ? '549' + d : null;
+}
+const mostrarWA = (n) => n ? `+54 9 ${n.slice(3,7)} ${n.slice(7)}` : '';
+const linkWA = (num, txt) => `https://wa.me/${num}?text=${encodeURIComponent(txt)}`;
+const linkWAWeb = (num, txt) => `https://web.whatsapp.com/send?phone=${num}&text=${encodeURIComponent(txt)}`;
+
+/* ---------- Datos de ejemplo (ficticios) ---------- */
+function datosEjemplo(){
+  const c = (id,nombre,telefono,notas='') => ({id,nombre,telefono,notas,creado:diasAtras(300)});
+  const clientes = [
+    c('c1','Marcelo Quintana','2972 500101'),
+    c('c2','Lorena Paillalef','2972 500102'),
+    c('c3','Diego Arrieta','2972 500103','Prefiere que lo llamen después de las 14 h'),
+    c('c4','Sofía Benítez','2972 500104'),
+    c('c5','Hostería Los Radales','2972 500105','Vehículo de la empresa. Factura a nombre de la hostería.'),
+    c('c6','Ramiro Ñancucheo','2972 500106')
+  ];
+  const v = (id,clienteId,patente,tipo,marca,modelo,anio,color,vin,motor) => ({id,clienteId,patente,tipo,marca,modelo,anio,color,vin,motor});
+  const vehiculos = [
+    v('v1','c1','AE123KD','Camioneta','Toyota','Hilux SRV','2021','Blanco','','Diésel 2.8'),
+    v('v2','c2','AC456PL','Auto','Volkswagen','Gol Trend','2018','Gris','','Nafta 1.6'),
+    v('v3','c3','OKL482','Camioneta','Ford','Ranger XLT','2014','Azul','','Diésel 3.2'),
+    v('v4','c4','AF789TR','Auto','Fiat','Cronos Drive','2023','Rojo','','Nafta 1.3'),
+    v('v5','c5','AD321MN','Utilitario / camión','Renault','Kangoo','2019','Blanco','','Nafta 1.6'),
+    v('v6','c6','A123BCD','Moto','Honda','XR 250 Tornado','2020','Rojo','','Nafta 250 cc'),
+    v('v7','c6','NJK905','Auto','Chevrolet','Corsa Classic','2012','Blanco','','Nafta 1.4 GNC'),
+    v('v8','c1','AE998QS','Auto','Toyota','Corolla XEI','2020','Gris plata','','Nafta 2.0')
+  ];
+  let num = 0;
+  const o = (vehiculoId, dias, estado, km, tareas, total, extra={}) => {
+    num++;
+    const idx = CONFIG.ESTADOS.indexOf(estado);
+    const hist = CONFIG.ESTADOS.slice(0, idx+1).map((e,i) => ({estado:e, fecha:diasAtras(Math.max(dias - i*(dias>5?Math.ceil(dias/8):0), 0) - (i*0.02))}));
+    return Object.assign({
+      id:'o'+num, numero:num, vehiculoId, fechaIngreso:diasAtras(dias), km,
+      tareas:tareas.map(t => ({id:uid(), texto:t, hecha: idx>=4})),
+      total, estado, fotos:[], notas:'', proxKm:'', proxFecha:'',
+      fechaEntrega: estado==='Entregado' ? hist[hist.length-1].fecha : '',
+      historial:hist, avisos: estado==='Entregado' ? [{fecha:hist[hist.length-1].fecha}] : []
+    }, extra);
+  };
+  const enDias = (n) => new Date(Date.now() + n*86400000).toISOString().slice(0,10);
+  const ordenes = [
+    o('v1',200,'Entregado',58000,['Service 10.000 km: aceite 5W30 sintético','Filtro de aceite, aire, combustible y habitáculo','Revisión general de fluidos'],210000,{proxKm:'68000',proxFecha:enDias(-15)}),
+    o('v5',160,'Entregado',87300,['Pastillas de freno delanteras','Rectificado de discos','Purga de líquido de frenos'],138000,{proxFecha:enDias(12),notas:'Pastillas traseras al 40 %. Avisar en el próximo service.'}),
+    o('v3',120,'Entregado',182400,['Cambio de aceite y filtros (aceite, aire, combustible)','Engrase de crucetas'],165000,{proxKm:'192400',proxFecha:enDias(60)}),
+    o('v2',45,'Entregado',96500,['Alineación y balanceo','Rotación de cubiertas'],52000,{proxFecha:enDias(140)}),
+    o('v3',30,'Entregado',189900,['Bujes de parrilla inferior (ambos lados)','Extremos de dirección','Alineación'],245000,{proxKm:'194900',proxFecha:enDias(-6)}),
+    o('v7',0,'Ingresado',212000,['Revisar ruido en tren delantero al doblar','Diagnóstico general'],0,{notas:'El cliente dice que el ruido aparece en frío.'}),
+    o('v4',1,'Presupuestado',41200,['Kit de distribución completo','Bomba de agua','Líquido refrigerante'],520000),
+    o('v1',2,'Aprobado',67100,['Escaneo de inyección','Limpieza de inyectores','Cambio de filtro de combustible'],185000),
+    o('v6',3,'En reparación',18400,['Kit de transmisión (cadena, corona y piñón)','Regulación de carburador'],98000),
+    o('v2',1,'En reparación',101300,['Embrague completo (disco, placa y crapodina)','Rectificado de volante'],640000),
+    o('v8',0,'Listo',54800,['Service: aceite y filtros','Alineación y balanceo','Revisión de frenos'],178000,{proxKm:'64800'}),
+    o('v5',0,'Listo',93100,['Cambio de batería 12 V 75 Ah','Revisión de alternador y carga'],165000)
+  ];
+  return {
+    version:1,
+    config:Object.assign({ pin:'1234', plantilla:PLANTILLA_DEFECTO, plantillaDemora:PLANTILLA_DEMORA }, JSON.parse(JSON.stringify(DATOS_TALLER))),
+    clientes, vehiculos, ordenes, proximoNumero: num+1,
+    hojas:[
+      {id:'h1', vehiculoId:'v3', tipo:'Queja / reclamo', fecha:enDias(-8), descripcion:'Volvió diciendo que sigue un ruido leve en el tren delantero al pasar lomos de burro, después del cambio de bujes.', estado:'Abierta', ordenId:'o5', fotos:[], recordar:enDias(2), resolucion:'', resueltaFecha:''},
+      {id:'h2', vehiculoId:'v5', tipo:'Pendiente', fecha:enDias(-160), descripcion:'Pastillas traseras al 40 %. El cliente prefirió cambiarlas en el próximo service.', estado:'Abierta', ordenId:'o2', fotos:[], recordar:enDias(12), resolucion:'', resueltaFecha:''},
+      {id:'h3', vehiculoId:'v2', tipo:'Garantía', fecha:enDias(-40), descripcion:'Vibración a más de 100 km/h. Se rebalanceó la rueda delantera derecha sin cargo.', estado:'Resuelta', ordenId:'o4', fotos:[], recordar:'', resolucion:'Rebalanceo sin cargo. Quedó bien.', resueltaFecha:diasAtras(40)},
+      {id:'h4', vehiculoId:'v8', tipo:'Observación', fecha:enDias(0), descripcion:'Pidió presupuesto de 4 cubiertas para el invierno. Avisarle cuando lleguen.', estado:'Abierta', ordenId:'o11', fotos:[], recordar:enDias(20), resolucion:'', resueltaFecha:''}
+    ],
+    mensajes:[ {id:'m1', titulo:'Presupuesto listo', texto:'Hola {cliente}! Te escribimos de {taller}.\nYa tenemos el presupuesto de tu {vehiculo} (patente {patente}): {total}.\n¿Nos confirmás si avanzamos con el arreglo?'} ]
+  };
+}
+
+/* ---------- Persistencia (localStorage con try/catch) ---------- */
+let db;
+function cargar(){
+  try { const raw = localStorage.getItem(CONFIG.STORAGE_KEY); if (raw) { db = JSON.parse(raw); migrar(); guardar(); return; } } catch(e){}
+  db = datosEjemplo(); guardar();
+}
+/* Completa campos nuevos en datos guardados con una versión anterior */
+function migrar(){
+  const k = db.config;
+  if (k.taller === 'Taller CKP') k.taller = DATOS_TALLER.taller;
+  if (k.direccion === 'Av. San Martín 1234, Junín de los Andes') k.direccion = DATOS_TALLER.direccion;
+  if (k.telefono === '2972 500000') k.telefono = '';
+  ['email','horario','redGPS'].forEach(x => { if (k[x] === undefined) k[x] = DATOS_TALLER[x]; });
+  if (!Array.isArray(k.servicios)) k.servicios = [...DATOS_TALLER.servicios];
+  if (k.plantilla === PLANTILLA_VIEJA) k.plantilla = PLANTILLA_DEFECTO;
+  db.mensajes = db.mensajes || [];
+  db.hojas = db.hojas || [];
+  db.config.plantillaDemora = db.config.plantillaDemora || PLANTILLA_DEMORA;
+}
+function guardar(){
+  try { localStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify(db)); return true; }
+  catch(e){ toast('No se pudo guardar en este equipo (memoria llena). Probá borrando algunas fotos.','error'); return false; }
+}
+function sesionAbierta(){ return true; } /* demo de portafolio: entra directo, sin PIN */
+function abrirSesion(v){ window.__sesion = v; try { v ? sessionStorage.setItem(CONFIG.SESSION_KEY,'1') : sessionStorage.removeItem(CONFIG.SESSION_KEY); } catch(e){} }
+
+/* ---------- Consultas ---------- */
+const cliente = (id) => db.clientes.find(x => x.id === id);
+const vehiculo = (id) => db.vehiculos.find(x => x.id === id);
+const orden = (id) => db.ordenes.find(x => x.id === id);
+const nombreVeh = (v) => v ? `${v.marca} ${v.modelo}${v.anio ? ' '+v.anio : ''}`.trim() : 'Vehículo';
+const ordenesDeVeh = (vid) => db.ordenes.filter(o => o.vehiculoId === vid).sort((a,b) => b.fechaIngreso.localeCompare(a.fechaIngreso));
+const vehiculosDeCli = (cid) => db.vehiculos.filter(v => v.clienteId === cid);
+const nroOrden = (n) => '#' + String(n).padStart(4,'0');
+const badge = (e) => `<span class="badge ${CLASE_ESTADO[e]||''}">${esc(e)}</span>`;
+const patenteHTML = (p, grande) => `<span class="patente${grande?' grande':''}">${esc(p)}</span>`;
+
+/* Próximo service por vehículo: el último dato cargado */
+function servicesPendientes(){
+  const res = [];
+  const hoy = new Date().toISOString().slice(0,10);
+  for (const v of db.vehiculos){
+    const ords = ordenesDeVeh(v.id);
+    const conProx = ords.find(o => o.proxKm || o.proxFecha);
+    if (!conProx) continue;
+    // si el auto volvió y se ENTREGÓ una orden posterior, ese service se considera hecho
+    const posterior = ords.find(o => o.fechaIngreso > conProx.fechaIngreso && o.estado === 'Entregado');
+    if (posterior) continue;
+    let nivel = 'ok', dias = null;
+    if (conProx.proxFecha){
+      dias = Math.round((new Date(conProx.proxFecha+'T12:00:00') - new Date(hoy+'T12:00:00'))/86400000);
+      nivel = dias < 0 ? 'vencido' : dias <= CONFIG.DIAS_AVISO_SERVICE ? 'proximo' : 'ok';
+    }
+    res.push({v, o:conProx, nivel, dias, ultimoKm: Math.max(...ords.map(x => Number(x.km)||0))});
+  }
+  const peso = {vencido:0, proximo:1, ok:2};
+  return res.sort((a,b) => peso[a.nivel]-peso[b.nivel] || (a.dias??9999)-(b.dias??9999));
+}
+
+/* ---------- Mensaje de WhatsApp ---------- */
+/* Datos que se reemplazan en las plantillas. La orden puede ser null (mensaje general). */
+function datosMensaje(o, c){
+  const v = o ? vehiculo(o.vehiculoId) : null;
+  c = c || cliente(v?.clienteId);
+  const primerNombre = (c?.nombre||'').trim().split(' ')[0] || 'cliente';
+  return {
+    cliente: primerNombre.charAt(0).toUpperCase() + primerNombre.slice(1),
+    vehiculo: v ? nombreVeh(v) : 'vehículo', patente: v?.patente||'',
+    trabajos: o ? (o.tareas.map(t => '- ' + t.texto).join('\n') || '- (sin detalle)') : '',
+    total: o ? plata(o.total) : '', taller: db.config.taller, direccion: db.config.direccion,
+    orden: o ? nroOrden(o.numero) : '', km: o ? miles(o.km) : '',
+    horario: (db.config.horario||'').replace(/^./, m => m.toLowerCase()), email: db.config.email||'', telefono: db.config.telefono||''
+  };
+}
+function armarMensaje(plantilla, o, c){
+  const d = datosMensaje(o, c);
+  return String(plantilla||'').replace(/\{(\w+)\}/g, (m,k) => k in d ? d[k] : m);
+}
+const mensajeListo = (o) => armarMensaje(db.config.plantilla || PLANTILLA_DEFECTO, o);
+/* Al guardar un mensaje escrito a mano, los datos concretos vuelven a ser {campos} para reusarlo con otros clientes */
+function aPlantilla(texto, o, c){
+  const d = datosMensaje(o, c);
+  const pares = ['trabajos','vehiculo','direccion','taller','total','patente','cliente'].map(k => [k, d[k]]).filter(([k,v]) => v && String(v).length > 1).sort((a,b) => String(b[1]).length - String(a[1]).length);
+  let t = texto;
+  for (const [k,v] of pares) t = t.split(v).join('{'+k+'}');
+  return t;
+}
+
+/* ---------- Toast y modales ---------- */
+function toast(msg, tipo=''){
+  $('#toasts').innerHTML = '';
+  const t = document.createElement('div'); t.className = 'toast ' + tipo; t.textContent = msg;
+  $('#toasts').appendChild(t); setTimeout(() => t.remove(), 3600);
+}
+let modalPrevFocus = null;
+function abrirModal(titulo, cuerpo){
+  modalPrevFocus = document.activeElement;
+  $('#modal-root').innerHTML = `
+    <div class="modal-fondo" data-act="cerrar-modal-fondo">
+      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-tit">
+        <div class="modal-h"><h2 id="modal-tit">${titulo}</h2>
+          <button class="btn icono" data-act="cerrar-modal" aria-label="Cerrar">${ico('cerrar')}</button></div>
+        ${cuerpo}
+      </div>
+    </div>`;
+  const f = $('#modal-root .modal input, #modal-root .modal textarea, #modal-root .modal select, #modal-root .modal .btn.pri, #modal-root .modal .btn.wa');
+  (f || $('#modal-root .modal button'))?.focus();
+}
+function cerrarModal(){ $('#modal-root').innerHTML = ''; modalPrevFocus?.focus?.(); }
+function confirmar(titulo, texto, textoOk, onOk, peligro=true){
+  abrirModal(esc(titulo), `<p>${texto}</p>
+    <div class="form-acc"><button class="btn" data-act="cerrar-modal">Cancelar</button>
+    <button class="btn ${peligro?'peligro lleno':'pri'}" id="conf-ok">${esc(textoOk)}</button></div>`);
+  $('#conf-ok').onclick = () => { cerrarModal(); onOk(); };
+  $('#conf-ok').focus();
+}
+
+/* ---------- Router por hash ---------- */
+const NAV = [
+  {id:'taller', txt:'Taller', ic:'taller'},
+  {id:'vehiculos', txt:'Vehículos', ic:'auto'},
+  {id:'clientes', txt:'Clientes', ic:'clientes'},
+  {id:'services', txt:'Services', ic:'service'},
+  {id:'historial', txt:'Historial', ic:'historial'},
+  {id:'ajustes', txt:'Ajustes', ic:'ajustes'}
+];
+const SECCION = {orden:'taller', nueva:'taller', editar:'taller', vehiculo:'vehiculos', cliente:'clientes', hoja:'historial'};
+function ruta(){ const h = location.hash.replace(/^#/,''); const i = h.indexOf('-'); return i < 0 ? {v:h||'taller', id:''} : {v:h.slice(0,i), id:h.slice(i+1)}; }
+const ir = (h) => { location.hash = h; };
+
+let ultimaRuta = '';
+function render(){
+  if (!sesionAbierta()) return renderLock();
+  if (!$('#main')) renderShell();
+  const r = ruta();
+  const sec = SECCION[r.v] || r.v;
+  $$('[data-nav]').forEach(a => { const on = a.dataset.nav === sec; a.classList.toggle('on', on); on ? a.setAttribute('aria-current','page') : a.removeAttribute('aria-current'); });
+  $('#marca-nombre').textContent = db.config.taller;
+  const vistas = {taller:vTaller, orden:vOrden, nueva:vForm, editar:vForm, vehiculos:vVehiculos, vehiculo:vVehiculo, clientes:vClientes, cliente:vCliente, services:vServices, info:vInfo, historial:vHistorial, hoja:vHoja, ajustes:vAjustes};
+  const fn = vistas[r.v] || vTaller;
+  $('#main').innerHTML = fn(r);
+  if (fn.despues) fn.despues(r);
+  const clave = location.hash;
+  if (clave !== ultimaRuta){ window.scrollTo(0,0); ultimaRuta = clave; }
+}
+
+function renderShell(){
+  const navLinks = NAV.map(n => `<a href="#${n.id}" data-nav="${n.id}">${ico(n.ic)}<span>${n.txt}</span></a>`).join('');
+  $('#root').innerHTML = `
+  <div class="app">
+    <header class="topbar"><div class="topbar-in">
+      <a class="logo-link" href="#info" aria-label="Ver datos del taller"><img class="logo-img" src="${LOGO}" alt="CKP Ruta 40"></a>
+      <span class="sr-only" id="marca-nombre">CKP Ruta 40</span>
+      <div class="spacer"></div>
+      <a class="btn-taller" href="#info" data-nav="info">${ico('taller')}<span>El taller</span></a>
+      <span class="demo-tag" title="Los datos se guardan solo en este equipo">Demo</span>
+    </div></header>
+    <div class="layout">
+      <aside class="side"><nav aria-label="Secciones">${navLinks}</nav></aside>
+      <main id="main" tabindex="-1"></main>
+    </div>
+    <footer class="foot">
+      <span>Propiedad de Cordobes Fausto</span>
+      <a href="https://wa.me/${CONFIG.DESARROLLADOR_WA}?text=${encodeURIComponent('Hola Fausto, vi el sistema de CKP Ruta 40 y quiero consultar')}" target="_blank" rel="noopener">${ico('wa')}Contacto</a>
+    </footer>
+    <nav class="bottomnav" aria-label="Secciones">${navLinks}</nav>
+  </div>`;
+}
+
+function renderLock(){
+  $('#root').innerHTML = `
+  <div class="lock"><img class="lock-logo" src="${LOGO}" alt="${esc(db.config.taller)}">
+    <form class="lock-card" id="lock-form" autocomplete="off">
+    <h1 style="font-size:24px">Órdenes de trabajo</h1>
+    <p class="muted" style="margin:4px 0 0">Ingresá el PIN del taller</p>
+    <label class="sr-only" for="pin">PIN</label>
+    <input id="pin" type="password" inputmode="numeric" maxlength="8" required autofocus>
+    <div class="err-txt" id="pin-err" role="alert"></div>
+    <button class="btn pri bloque" type="submit">${ico('candado')}Entrar</button>
+    <p class="muted chico-txt" style="margin:14px 0 0">PIN de la demo: <b>1234</b> · se cambia en Ajustes</p>
+  </form>
+  <div class="lock-info">${esc(db.config.horario||'')}<br>${esc(db.config.direccion||'')}${db.config.email ? '<br>' + esc(db.config.email) : ''}${db.config.redGPS ? `<br><b>${esc(db.config.redGPS)}</b>` : ''}</div>
+  </div>`;
+  $('#lock-form').onsubmit = (e) => {
+    e.preventDefault();
+    if ($('#pin').value === String(db.config.pin)){ abrirSesion(true); $('#root').innerHTML=''; render(); }
+    else { $('#pin-err').textContent = 'PIN incorrecto. Probá de nuevo.'; $('#pin').value=''; $('#pin').focus(); }
+  };
+  setTimeout(() => $('#pin')?.focus(), 30);
+}
+
+/* =========================================================
+   VISTA: TALLER (inicio)
+   ========================================================= */
+let filtroEstado = 'activos', busqTaller = '';
+function filtrarOrdenes(){
+  const q = sinAcentos(busqTaller.trim()), qp = normPatente(busqTaller);
+  return db.ordenes.filter(o => {
+    if (filtroEstado === 'activos' && o.estado === 'Entregado') return false;
+    if (filtroEstado !== 'activos' && filtroEstado !== 'todos' && o.estado !== filtroEstado) return false;
+    if (!q) return true;
+    const v = vehiculo(o.vehiculoId), c = cliente(v?.clienteId);
+    const texto = sinAcentos([nombreVeh(v), c?.nombre, c?.telefono, o.tareas.map(t=>t.texto).join(' '), nroOrden(o.numero)].join(' '));
+    return texto.includes(q) || (qp && normPatente(v?.patente).includes(qp)) || (qp && String(c?.telefono||'').replace(/\D/g,'').includes(qp));
+  }).sort((a,b) => {
+    const pa = CONFIG.ESTADOS.indexOf(a.estado), pb = CONFIG.ESTADOS.indexOf(b.estado);
+    if (filtroEstado === 'activos' && pa !== pb) return pb - pa; // listos primero
+    return b.fechaIngreso.localeCompare(a.fechaIngreso);
+  });
+}
+function tarjetaOrden(o){
+  const v = vehiculo(o.vehiculoId), c = cliente(v?.clienteId);
+  const t = o.tareas.slice(0,2).map(x => esc(x.texto)).join(' · ');
+  const mas = o.tareas.length > 2 ? ` <span class="muted">+${o.tareas.length-2} más</span>` : '';
+  return `<a class="ot" href="#orden-${o.id}">
+    <div class="ot-top">${patenteHTML(v?.patente||'—')}${badge(o.estado)}</div>
+    <div class="ot-veh">${esc(nombreVeh(v))}</div>
+    <div class="ot-cli">${esc(c?.nombre||'Sin cliente')}${(() => { const n = hojasAbiertas(v?.id).length; return n ? ` · <span class="badge h-pend">${n} ${n===1?'hoja abierta':'hojas abiertas'}</span>` : ''; })()}</div>
+    <div class="ot-tareas">${t || '<span class="muted">Sin tareas cargadas</span>'}${mas}</div>
+    <div class="ot-bottom"><span>${nroOrden(o.numero)} · ${o.estado==='Entregado' ? 'entregado '+fecha(o.fechaEntrega) : 'ingresó '+hace(o.fechaIngreso)}</span><strong>${o.total ? plata(o.total) : '<span class="muted" style="font-size:14px">Sin monto</span>'}</strong></div>
+  </a>`;
+}
+function listaOrdenesHTML(){
+  const lista = filtrarOrdenes();
+  if (!lista.length){
+    return busqTaller
+      ? `<div class="vacio"><p>No encontramos órdenes para «${esc(busqTaller)}».</p><a class="btn pri" href="#nueva">${ico('mas')}Nueva orden</a></div>`
+      : `<div class="vacio"><p>No hay autos en este estado.</p><a class="btn pri" href="#nueva">${ico('mas')}Cargar un auto</a></div>`;
+  }
+  return `<div class="lista cols">${lista.map(tarjetaOrden).join('')}</div>`;
+}
+function vTaller(){
+  const activos = db.ordenes.filter(o => o.estado !== 'Entregado');
+  const cuenta = (e) => db.ordenes.filter(o => o.estado === e).length;
+  const vencidos = servicesPendientes().filter(s => s.nivel === 'vencido').length;
+  const chips = [['activos','En el taller',activos.length], ...CONFIG.ESTADOS.map(e => [e,e,cuenta(e)]), ['todos','Todas',db.ordenes.length]];
+  return `
+  <div class="vhead"><h1>Autos en el taller</h1><a class="btn pri" href="#nueva">${ico('mas')}Nueva orden</a></div>
+  <div class="stats">
+    <button class="stat" data-act="filtro" data-f="activos"><b>${activos.length}</b><span>En el taller</span></button>
+    <button class="stat" data-act="filtro" data-f="Listo"><b>${cuenta('Listo')}</b><span>Listos para retirar</span></button>
+    <button class="stat" data-act="filtro" data-f="Ingresado"><b>${cuenta('Ingresado')}</b><span>Para presupuestar</span></button>
+    <a class="stat ${vencidos?'alerta':''}" href="#services" style="text-decoration:none"><b>${vencidos}</b><span>Services vencidos</span></a>
+  </div>
+  <div class="buscar">${ico('buscar')}<label class="sr-only" for="q-taller">Buscar</label>
+    <input id="q-taller" type="search" placeholder="Buscar por patente, cliente, teléfono o trabajo" value="${esc(busqTaller)}"></div>
+  <div class="chips" role="group" aria-label="Filtrar por estado">${chips.map(([id,txt,n]) => `<button class="chip ${filtroEstado===id?'on':''}" data-act="filtro" data-f="${esc(id)}" aria-pressed="${filtroEstado===id}">${esc(txt)} <span class="n">${n}</span></button>`).join('')}</div>
+  <div id="lista-ordenes">${listaOrdenesHTML()}</div>`;
+}
+vTaller.despues = () => {
+  $('#q-taller').addEventListener('input', (e) => { busqTaller = e.target.value; if (busqTaller && filtroEstado==='activos') {} $('#lista-ordenes').innerHTML = listaOrdenesHTML(); });
+};
+
+/* =========================================================
+   VISTA: DETALLE DE ORDEN
+   ========================================================= */
+function vOrden(r){
+  const o = orden(r.id);
+  if (!o) return `<div class="vacio"><p>La orden no existe o fue borrada.</p><a class="btn pri" href="#taller">Volver al taller</a></div>`;
+  const v = vehiculo(o.vehiculoId), c = cliente(v?.clienteId);
+  const idx = CONFIG.ESTADOS.indexOf(o.estado);
+  const pasos = CONFIG.ESTADOS.map((e,i) => `<button class="paso ${i<idx?'hecho':''} ${i===idx?'actual':''} ${i===idx&&e==='Listo'?'listo':''}" data-act="estado" data-e="${esc(e)}" aria-pressed="${i===idx}">${i<idx?ico('check'):''}${esc(e)}</button>`).join('');
+  const sig = CONFIG.ESTADOS[idx+1];
+  const ultimoAviso = o.avisos?.length ? o.avisos[o.avisos.length-1].fecha : null;
+  const bloqueListo = (o.estado === 'Listo' || o.estado === 'Entregado') ? `
+    <div class="aviso-listo">
+      <h3>${o.estado==='Listo' ? 'Listo para retirar' : 'Entregado el ' + fecha(o.fechaEntrega)}</h3>
+      <div class="chico-txt">${ultimoAviso ? 'Último mensaje por WhatsApp: ' + fechaHora(ultimoAviso) : 'Todavía no se le avisó al cliente.'}</div>
+      <div class="acc">
+        <button class="btn wa" data-act="wa">${ico('wa')}${ultimoAviso ? 'Volver a avisar' : 'Avisar por WhatsApp'}</button>
+        ${o.estado==='Listo' ? `<button class="btn" data-act="estado" data-e="Entregado">${ico('check')}Marcar entregado</button>` : ''}
+      </div>
+    </div>` : '';
+  const fotos = o.fotos.map((f,i) => `<div class="foto"><img src="${f}" alt="Foto ${i+1} de la orden" data-act="ver-foto" data-i="${i}" loading="lazy"><button data-act="borrar-foto" data-i="${i}" aria-label="Borrar foto ${i+1}">${ico('cerrar')}</button></div>`).join('');
+  return `
+  <div class="vhead">
+    <a class="btn icono" href="#taller" aria-label="Volver">${ico('atras')}</a>
+    <h1>Orden ${nroOrden(o.numero)}</h1>
+    <a class="btn icono" href="#editar-${o.id}" aria-label="Editar orden">${ico('editar')}</a>
+    <button class="btn icono peligro" data-act="borrar-orden" aria-label="Borrar orden">${ico('borrar')}</button>
+  </div>
+  ${bloqueListo}
+  ${alertaHojasHTML(v?.id)}
+  <div class="card">
+    <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:10px">${patenteHTML(v?.patente||'—', true)}${badge(o.estado)}</div>
+    <dl class="kv">
+      <dt>Vehículo</dt><dd><a href="#vehiculo-${v?.id}">${esc(nombreVeh(v))}</a>${v?.color?' · '+esc(v.color):''}</dd>
+      <dt>Cliente</dt><dd>${c ? `<a href="#cliente-${c.id}">${esc(c.nombre)}</a>` : '—'}</dd>
+      <dt>WhatsApp</dt><dd>${esc(c?.telefono||'—')}</dd>
+      <dt>Ingresó</dt><dd>${fecha(o.fechaIngreso)} (${hace(o.fechaIngreso)})</dd>
+      <dt>Km</dt><dd>${o.km ? miles(o.km)+' km' : '—'}</dd>
+    </dl>
+  </div>
+  ${c ? `<div class="card"><h3>Mensajes al cliente</h3>${botonesMensajes(c.id, o.id)}</div>` : ''}
+  <div class="card">
+    <h3>Estado</h3>
+    <div class="pasos" role="group" aria-label="Cambiar estado">${pasos}</div>
+    ${o.estado === 'Presupuestado' && c ? `<button class="btn wa bloque" style="margin-top:12px" data-act="msg" data-tipo="presupuesto" data-cli="${c.id}" data-ord="${o.id}">${ico('wa')}Enviar presupuesto por WhatsApp</button>` : ''}
+    ${sig ? `<button class="btn pri bloque" style="margin-top:12px" data-act="estado" data-e="${esc(sig)}">Pasar a «${esc(sig)}»</button>` : ''}
+  </div>
+  <div class="card">
+    <h3>Trabajos</h3>
+    ${o.tareas.length ? `<ul class="tareas">${o.tareas.map(t => `<li class="${t.hecha?'hecha':''}"><label><input type="checkbox" data-act="tarea" data-t="${t.id}" ${t.hecha?'checked':''}><span>${esc(t.texto)}</span></label></li>`).join('')}</ul>`
+      : `<p class="muted">Todavía no hay trabajos cargados. <a href="#editar-${o.id}">Agregar</a></p>`}
+    <div class="total-box"><span>Total</span><b>${o.total ? plata(o.total) : '<span class="muted" style="font-size:18px">Sin monto</span>'}</b></div>
+  </div>
+  <div class="card">
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px"><h3 style="margin:0;flex:1">Hojas de esta orden</h3>
+      <button class="btn chico punteado" data-act="nueva-hoja" data-vid="${v?.id}" data-oid="${o.id}">${ico('mas')}Agregar hoja</button></div>
+    ${(() => { const hs = db.hojas.filter(h => h.ordenId === o.id); return hs.length ? `<div class="lista">${hs.map(h => tarjetaHoja(h,false)).join('')}</div>` : '<p class="muted chico-txt" style="margin:0">Quejas, pendientes, garantías u otras situaciones de este trabajo.</p>'; })()}
+  </div>
+  <div class="card">
+    <h3>Fotos</h3>
+    <div class="fotos">${fotos}
+      <label class="add-foto">${ico('camara')}<span>Agregar</span><input type="file" accept="image/*" capture="environment" multiple data-act="subir-foto"></label>
+    </div>
+  </div>
+  <div class="grid2" style="margin-top:12px">
+    <div class="card" style="margin:0"><h3>Notas internas</h3>
+      <p class="chico-txt" style="margin:0;white-space:pre-wrap">${o.notas ? esc(o.notas) : '<span class="muted">Sin notas. No se envían al cliente.</span>'}</p></div>
+    <div class="card" style="margin:0"><h3>Próximo service</h3>
+      <p class="chico-txt" style="margin:0">${o.proxKm || o.proxFecha ? [o.proxKm ? 'A los '+miles(o.proxKm)+' km' : '', o.proxFecha ? 'El '+fecha(o.proxFecha+'T12:00:00') : ''].filter(Boolean).join(' o ') : '<span class="muted">Sin definir</span>'}</p></div>
+  </div>
+  <div class="card">
+    <h3>Historial de la orden</h3>
+    <ul class="timeline">${(o.historial||[]).slice().reverse().map(h => `<li><b>${esc(h.estado)}</b> · <span class="muted">${fechaHora(h.fecha)}</span></li>`).join('')}
+    ${(o.avisos||[]).slice().reverse().map(a => `<li>WhatsApp: ${esc(a.tipo || 'Auto listo')} · <span class="muted">${fechaHora(a.fecha)}</span></li>`).join('')}</ul>
+  </div>
+  <div class="form-acc" style="margin-top:12px">
+    <button class="btn" data-act="imprimir">${ico('imprimir')}Comprobante / PDF</button>
+    <a class="btn" href="#vehiculo-${v?.id}">${ico('auto')}Historial del vehículo</a>
+  </div>`;
+}
+vOrden.despues = (r) => { window.__ordenActual = r.id; };
+
+function cambiarEstado(o, nuevo){
+  if (o.estado === nuevo) return;
+  o.estado = nuevo;
+  o.historial = o.historial || [];
+  o.historial.push({estado:nuevo, fecha:new Date().toISOString()});
+  if (nuevo === 'Listo') o.tareas.forEach(t => t.hecha = true);
+  if (nuevo === 'Entregado') o.fechaEntrega = new Date().toISOString(); else o.fechaEntrega = '';
+  guardar(); render();
+  if (nuevo === 'Listo') abrirWA(o, true);
+  else toast('Estado: ' + nuevo, 'ok');
+}
+
+/* ---------- Mensajes por WhatsApp ---------- */
+const ordenesDeCli = (cid) => { const ids = vehiculosDeCli(cid).map(v => v.id); return db.ordenes.filter(o => ids.includes(o.vehiculoId)).sort((a,b) => b.fechaIngreso.localeCompare(a.fechaIngreso)); };
+const ordenSugerida = (cid) => { const os = ordenesDeCli(cid); return os.find(o => o.estado === 'Listo') || os.find(o => o.estado !== 'Entregado') || os[0] || null; };
+function plantillaDe(tipo){
+  if (tipo === 'listo') return db.config.plantilla || PLANTILLA_DEFECTO;
+  if (tipo === 'demora') return db.config.plantillaDemora || PLANTILLA_DEMORA;
+  if (tipo === 'presupuesto') return PLANTILLA_PRESUPUESTO;
+  if (tipo.startsWith('m:')) return db.mensajes.find(m => 'm:'+m.id === tipo)?.texto || '';
+  return 'Hola {cliente}! Te escribimos de {taller}.\n\n';
+}
+function nombreTipo(tipo){
+  if (tipo === 'listo') return 'Auto listo';
+  if (tipo === 'demora') return 'Se queda más tiempo';
+  if (tipo === 'presupuesto') return 'Presupuesto';
+  if (tipo.startsWith('m:')) return db.mensajes.find(m => 'm:'+m.id === tipo)?.titulo || 'Mensaje';
+  return 'Mensaje personalizado';
+}
+/* Fila de botones de mensajes (ficha del cliente y detalle de la orden) */
+function botonesMensajes(cid, oid){
+  const c = cliente(cid); if (!c) return '';
+  const num = normalizarWA(c.telefono);
+  if (!num) return `<div class="msg-btns"><span class="chico-txt" style="color:var(--danger)">El WhatsApp de ${esc(c.nombre)} no es válido.</span><button class="btn chico" data-act="editar-cliente" data-id="${c.id}">Corregir número</button></div>`;
+  const hayOrden = oid || ordenesDeCli(cid).length;
+  const b = (tipo, txt, icon, cls='') => `<button class="btn ${cls}" data-act="msg" data-tipo="${esc(tipo)}" data-cli="${c.id}" data-ord="${oid||''}">${ico(icon)}${esc(txt)}</button>`;
+  return `<div class="msg-btns">
+    ${oid ? '' : `<a class="btn wa" href="https://wa.me/${num}" target="_blank" rel="noopener">${ico('wa')}Abrir chat</a>`}
+    ${hayOrden ? b('listo','Auto listo para retirar','check') + b('demora','Se queda un poco más','reloj') : ''}
+    ${db.mensajes.map(m => b('m:'+m.id, m.titulo, 'mensaje')).join('')}
+    ${b('nuevo','Crear mensaje personalizado','mas','punteado')}
+  </div>`;
+}
+/* Compatibilidad: aviso de "auto listo" desde la orden */
+function abrirWA(o, recienListo=false){ abrirMensaje({cid: vehiculo(o.vehiculoId)?.clienteId, oid:o.id, tipo:'listo', recienListo}); }
+
+/* Modal: arma el mensaje, se puede retocar y se abre WhatsApp (app o Web). No es un bot: lo envían ellos. */
+function abrirMensaje({cid, oid, tipo, recienListo=false}){
+  const c = cliente(cid);
+  const num = normalizarWA(c?.telefono);
+  if (!num){
+    abrirModal('Falta el WhatsApp', `<p>El número de ${esc(c?.nombre||'este cliente')} no es válido${c?.telefono ? ` («${esc(c.telefono)}»)` : ''}. Cargalo con código de área, por ejemplo <b>2972 412345</b>.</p>
+      <div class="form-acc"><button class="btn" data-act="cerrar-modal">Cerrar</button>${c ? `<button class="btn pri" data-act="editar-cliente" data-id="${c.id}">Corregir número</button>` : ''}</div>`);
+    return;
+  }
+  const ords = ordenesDeCli(cid);
+  const necesitaOrden = tipo === 'listo' || tipo === 'demora' || tipo === 'presupuesto';
+  let sel = oid ? orden(oid) : ordenSugerida(cid);
+  if (necesitaOrden && !sel){ toast('Este cliente todavía no tiene órdenes cargadas','error'); return; }
+  const esNuevo = tipo === 'nuevo';
+  const titulo = recienListo ? '¡Auto listo! Avisale al cliente' : tipo === 'listo' ? 'Auto listo para retirar' : tipo === 'demora' ? 'Avisar que se queda más tiempo' : tipo === 'presupuesto' ? 'Enviar presupuesto al cliente' : esNuevo ? 'Crear mensaje personalizado' : esc(nombreTipo(tipo));
+  const elegirAuto = !oid && ords.length > 1;
+  const opciones = (esNuevo || !necesitaOrden ? `<option value="">Sin auto (mensaje general)</option>` : '') +
+    ords.map(o => { const v = vehiculo(o.vehiculoId); return `<option value="${o.id}" ${sel?.id===o.id?'selected':''}>${esc(v?.patente)} · ${esc(nombreVeh(v))} · ${esc(o.estado)}</option>`; }).join('');
+  const texto = armarMensaje(plantillaDe(tipo), sel, c);
+  abrirModal(titulo, `
+    <p class="chico-txt" style="margin-top:0">Para <b>${esc(c.nombre)}</b> (${mostrarWA(num)}). Se abre WhatsApp con el mensaje escrito y solo tocás <b>Enviar</b>.</p>
+    ${elegirAuto ? `<div class="campo"><label for="cm-orden">¿De qué auto es el mensaje?</label><select id="cm-orden">${opciones}</select></div>` : ''}
+    <div class="campo"><label for="wa-txt">${esNuevo ? 'Escribí el mensaje' : 'Mensaje (lo podés retocar)'}</label>
+      <textarea id="wa-txt" rows="9" style="min-height:200px">${esc(texto)}</textarea></div>
+    ${esNuevo ? `
+    <label class="check-fila"><input type="checkbox" id="cm-guardar"> Guardar este mensaje como botón para reusarlo</label>
+    <div class="campo" id="cm-c-nombre" hidden><label for="cm-nombre">Nombre del botón</label><input id="cm-nombre" maxlength="40" placeholder="Ej.: Falta un repuesto"><span class="err-msg">Ponele un nombre al botón.</span></div>` : ''}
+    <div class="form-acc" style="justify-content:stretch">
+      <a class="btn wa" style="flex:1" id="wa-app" href="#" target="_blank" rel="noopener">${ico('wa')}Abrir WhatsApp</a>
+      <a class="btn" style="flex:1" id="wa-web" href="#" target="_blank" rel="noopener">${ico('web')}WhatsApp Web</a>
+    </div>
+    ${esNuevo ? `<button class="btn bloque" style="margin-top:8px" id="cm-solo-guardar">${ico('check')}Guardar el botón sin enviar</button>` : ''}`);
+  const ta = $('#wa-txt');
+  let editado = false;
+  const actualizar = () => { $('#wa-app').href = linkWA(num, ta.value); $('#wa-web').href = linkWAWeb(num, ta.value); };
+  actualizar();
+  ta.addEventListener('input', () => { editado = true; actualizar(); });
+  $('#cm-orden')?.addEventListener('change', (e) => {
+    sel = e.target.value ? orden(e.target.value) : null;
+    if (!esNuevo && (!editado || true)){ ta.value = armarMensaje(plantillaDe(tipo), sel, c); editado = false; actualizar(); }
+  });
+  $('#cm-guardar')?.addEventListener('change', (e) => { $('#cm-c-nombre').hidden = !e.target.checked; if (e.target.checked) $('#cm-nombre').focus(); });
+  /* Guarda el mensaje personalizado como botón. Devuelve false si falta el nombre. */
+  const guardarBoton = () => {
+    if (!$('#cm-guardar')?.checked) return true;
+    const nom = $('#cm-nombre').value.trim();
+    if (!nom){ $('#cm-c-nombre').classList.add('err'); $('#cm-nombre').focus(); return false; }
+    db.mensajes.push({id:uid(), titulo:nom, texto:aPlantilla(ta.value, sel, c)});
+    guardar(); return true;
+  };
+  $('#cm-nombre')?.addEventListener('input', () => $('#cm-c-nombre').classList.remove('err'));
+  $('#cm-solo-guardar')?.addEventListener('click', () => {
+    if (!$('#cm-guardar').checked){ $('#cm-guardar').checked = true; $('#cm-c-nombre').hidden = false; }
+    if (!$('#cm-nombre').value.trim()){ $('#cm-c-nombre').classList.add('err'); $('#cm-nombre').focus(); return; }
+    guardarBoton(); cerrarModal(); render(); toast('Botón guardado','ok');
+  });
+  const registrar = (e) => {
+    if (!ta.value.trim()){ e.preventDefault(); toast('Escribí el mensaje primero','error'); ta.focus(); return; }
+    if (!guardarBoton()){ e.preventDefault(); return; }
+    if (sel){ sel.avisos = sel.avisos || []; sel.avisos.push({fecha:new Date().toISOString(), tipo:nombreTipo(tipo)}); }
+    guardar();
+    setTimeout(() => { cerrarModal(); render(); toast(sel ? 'Mensaje registrado en la orden ' + nroOrden(sel.numero) : 'Mensaje abierto en WhatsApp','ok'); }, 300);
+  };
+  $('#wa-app').addEventListener('click', registrar);
+  $('#wa-web').addEventListener('click', registrar);
+}
+
+/* Comprobante imprimible / PDF */
+function comprobanteHTML(o){
+  const v = vehiculo(o.vehiculoId), c = cliente(v?.clienteId);
+  return `
+    <div class="pr-h"><div>${encabezadoPR()}</div>
+      <div style="text-align:right"><b>Orden ${nroOrden(o.numero)}</b><div>Ingreso: ${fecha(o.fechaIngreso)}</div>${o.fechaEntrega?`<div>Entrega: ${fecha(o.fechaEntrega)}</div>`:''}<div>Estado: ${esc(o.estado)}</div></div></div>
+    <table class="pr-t"><tr><th>Cliente</th><td>${esc(c?.nombre||'')}</td><th>Teléfono</th><td>${esc(c?.telefono||'')}</td></tr>
+      <tr><th>Vehículo</th><td>${esc(nombreVeh(v))}</td><th>Patente</th><td>${esc(v?.patente||'')}</td></tr>
+      <tr><th>Km</th><td>${o.km?miles(o.km):'—'}</td><th>Motor</th><td>${esc(v?.motor||'—')}</td></tr></table>
+    <h3>Trabajos realizados</h3>
+    <table class="pr-t">${o.tareas.map((t,i) => `<tr><td style="width:30px">${i+1}</td><td>${esc(t.texto)}</td></tr>`).join('')}</table>
+    <div class="pr-tot">Total: ${plata(o.total)}</div>
+    ${o.proxKm||o.proxFecha ? `<p><b>Próximo service:</b> ${[o.proxKm?'a los '+miles(o.proxKm)+' km':'', o.proxFecha?'el '+fecha(o.proxFecha+'T12:00:00'):''].filter(Boolean).join(' o ')}</p>` : ''}
+    <div class="pr-firma"><div>Firma del taller</div><div>Conformidad del cliente</div></div>
+    ${pieServiciosPR()}
+    <div class="pr-pie">Documento no válido como factura · Sistema: Propiedad de Cordobes Fausto</div>`;
+}
+/* Encabezado y pie del comprobante con logo, datos, servicios y Red GPS Taller */
+function encabezadoPR(){
+  const k = db.config;
+  return `<img class="pr-logo" src="${LOGO}" alt="${esc(k.taller)}">
+    <div>${esc(k.direccion)}</div>
+    <div>${[k.telefono ? 'Tel.: ' + esc(k.telefono) : '', esc(k.email||'')].filter(Boolean).join(' · ')}</div>
+    <div>${esc(k.horario||'')}</div>`;
+}
+function pieServiciosPR(){
+  const k = db.config;
+  return `<div class="pr-serv"><b>Servicios:</b> ${(k.servicios||[]).map(esc).join(' · ')}${k.redGPS ? `<br><b>${esc(k.redGPS)}</b>` : ''}</div>`;
+}
+function imprimir(o){
+  const html = comprobanteHTML(o);
+  $('#print-area').innerHTML = html;
+  abrirModal('Comprobante ' + nroOrden(o.numero), `<div class="comp">${html}</div>
+    <p class="muted chico-txt">En la ventana de impresión elegí «Guardar como PDF» para mandarlo o archivarlo.</p>
+    <div class="form-acc"><button class="btn" data-act="cerrar-modal">Cerrar</button>
+    <button class="btn pri" id="btn-print">${ico('imprimir')}Imprimir / guardar PDF</button></div>`);
+  $('#btn-print').onclick = () => { try { window.print(); } catch(e){ toast('Este navegador no permite imprimir desde acá','error'); } };
+}
+
+/* Fotos: se comprimen antes de guardar */
+function comprimir(file){
+  return new Promise((ok, mal) => {
+    const fr = new FileReader();
+    fr.onload = () => { const img = new Image();
+      img.onload = () => { const max = 900; let w = img.width, h = img.height;
+        if (w > h && w > max){ h = h*max/w; w = max; } else if (h > max){ w = w*max/h; h = max; }
+        const cv = document.createElement('canvas'); cv.width = Math.round(w); cv.height = Math.round(h);
+        cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height); ok(cv.toDataURL('image/jpeg', 0.6)); };
+      img.onerror = mal; img.src = fr.result; };
+    fr.onerror = mal; fr.readAsDataURL(file);
+  });
+}
+async function leerFotos(files){
+  const res = [];
+  for (const f of files){ if (!f.type.startsWith('image/')) continue; try { res.push(await comprimir(f)); } catch(e){ toast('No se pudo leer una de las fotos','error'); } }
+  return res;
+}
+
+/* =========================================================
+   VISTA: FORMULARIO NUEVA / EDITAR ORDEN
+   ========================================================= */
+let F = null; // estado del formulario
+function vForm(r){
+  const editando = r.v === 'editar';
+  const o = editando ? orden(r.id) : null;
+  if (editando && !o) return `<div class="vacio"><p>La orden no existe.</p><a class="btn pri" href="#taller">Volver</a></div>`;
+  const vPre = !editando && r.id ? vehiculo(r.id) : (o ? vehiculo(o.vehiculoId) : null);
+  F = { editando, ordenId:o?.id||null, vehiculoId:vPre?.id||null, tareas:o ? o.tareas.map(t => ({...t})) : [], fotos:o ? [...o.fotos] : [] };
+  const sugerencias = [...new Set(db.ordenes.flatMap(x => x.tareas.map(t => t.texto)))].slice(0,80);
+  const opcCli = db.clientes.slice().sort((a,b) => a.nombre.localeCompare(b.nombre)).map(c => `<option value="${c.id}">${esc(c.nombre)} — ${esc(c.telefono)}</option>`).join('');
+  return `
+  <div class="vhead">
+    <a class="btn icono" href="${editando ? '#orden-'+o.id : '#taller'}" aria-label="Volver">${ico('atras')}</a>
+    <h1>${editando ? 'Editar orden ' + nroOrden(o.numero) : 'Nueva orden'}</h1>
+  </div>
+  <form id="form-orden" novalidate>
+    <div class="errores" id="f-errores" hidden tabindex="-1"></div>
+    <div class="card">
+      <fieldset><legend>Vehículo</legend>
+      ${editando ? '' : `
+      <div class="campo" id="c-patente"><label for="f-patente">Patente</label>
+        <input id="f-patente" class="patente-in" autocomplete="off" placeholder="AE123KD" value="${esc(vPre?.patente||'')}" maxlength="10" required>
+        <span class="ayuda">Si el auto ya vino antes, se completan solos los datos.</span>
+        <span class="err-msg">Ingresá la patente (6 o 7 caracteres).</span></div>`}
+      <div id="veh-encontrado"></div>
+      <div id="veh-nuevo" hidden>
+        <div class="fila">
+          <div class="campo"><label for="f-tipo">Tipo</label><select id="f-tipo">${CONFIG.TIPOS.map(t => `<option>${t}</option>`).join('')}</select></div>
+          <div class="campo"><label for="f-anio">Año</label><input id="f-anio" inputmode="numeric" maxlength="4" placeholder="2019"></div>
+        </div>
+        <div class="fila">
+          <div class="campo" id="c-marca"><label for="f-marca">Marca</label><input id="f-marca" placeholder="Toyota" list="dl-marcas"><span class="err-msg">Completá la marca.</span></div>
+          <div class="campo" id="c-modelo"><label for="f-modelo">Modelo</label><input id="f-modelo" placeholder="Hilux"><span class="err-msg">Completá el modelo.</span></div>
+        </div>
+        <div class="fila tres">
+          <div class="campo"><label for="f-color">Color</label><input id="f-color" placeholder="Blanco"></div>
+          <div class="campo"><label for="f-motor">Motor / combustible</label><input id="f-motor" placeholder="Nafta 1.6"></div>
+          <div class="campo"><label for="f-vin">VIN / chasis</label><input id="f-vin" placeholder="Opcional"></div>
+        </div>
+        <datalist id="dl-marcas">${['Chevrolet','Citroën','Fiat','Ford','Honda','Hyundai','Jeep','Nissan','Peugeot','Renault','Toyota','Volkswagen','Mercedes-Benz','Motomel','Yamaha','Zanella'].map(m=>`<option>${m}</option>`).join('')}</datalist>
+        <div class="campo" id="c-cliente" style="margin-top:6px"><label for="f-cliente">Dueño / cliente</label>
+          <select id="f-cliente"><option value="">+ Cliente nuevo</option>${opcCli}</select></div>
+        <div id="cli-nuevo">
+          <div class="fila">
+            <div class="campo" id="c-cnombre"><label for="f-cnombre">Nombre del cliente</label><input id="f-cnombre" autocomplete="off" placeholder="Nombre y apellido"><span class="err-msg">Completá el nombre.</span></div>
+            <div class="campo" id="c-ctel"><label for="f-ctel">WhatsApp del cliente</label><input id="f-ctel" type="tel" inputmode="tel" placeholder="2972 412345"><span class="wa-num" id="f-ctel-prev"></span><span class="err-msg">Número inválido: poné código de área + número.</span></div>
+          </div>
+        </div>
+      </div>
+      </fieldset>
+    </div>
+
+    <div class="card">
+      <fieldset><legend>Trabajos a realizar</legend>
+      <div class="campo" id="c-tareas" style="margin-bottom:6px"><label for="f-tarea">Agregá cada trabajo</label>
+        <div class="add-tarea"><input id="f-tarea" list="dl-tareas" autocomplete="off" placeholder="Ej.: cambio de filtro de aire">
+          <button type="button" class="btn pri" data-act="add-tarea">${ico('mas')}<span class="sr-only">Agregar trabajo</span></button></div>
+        <span class="ayuda">Escribí lo que quieras y tocá + (o Enter), o tocá un servicio de abajo.</span>
+        <div class="serv-rapidos" role="group" aria-label="Servicios rápidos">${serviciosRapidos().map(sv => `<button type="button" class="chip" data-act="add-servicio" data-s="${esc(sv)}">${ico('mas')}${esc(sv)}</button>`).join('')}</div>
+        <span class="err-msg">Agregá al menos un trabajo.</span>
+      </div>
+      <datalist id="dl-tareas">${sugerencias.map(s => `<option value="${esc(s)}">`).join('')}</datalist>
+      <div id="lista-tareas"></div>
+      </fieldset>
+      <div class="fila" style="margin-top:14px">
+        <div class="campo" id="c-total"><label for="f-total">Monto total ($)</label>
+          <input id="f-total" inputmode="numeric" placeholder="0" value="${o?.total ? o.total : ''}">
+          <span class="ayuda" id="f-total-prev">${o?.total ? plata(o.total) : 'Podés dejarlo vacío hasta presupuestar.'}</span>
+          <span class="err-msg">Ingresá un monto válido.</span></div>
+        <div class="campo"><label for="f-km">Km del vehículo</label><input id="f-km" inputmode="numeric" placeholder="Ej.: 85000" value="${o?.km||''}"></div>
+      </div>
+      ${editando ? '' : `<div class="campo"><label for="f-estado">Estado inicial</label><select id="f-estado">${CONFIG.ESTADOS.slice(0,4).map(e => `<option>${e}</option>`).join('')}</select></div>`}
+    </div>
+
+    <div class="card">
+      <h3>Fotos</h3>
+      <div class="fotos" id="f-fotos"></div>
+    </div>
+
+    <div class="card">
+      <div class="campo"><label for="f-notas">Notas internas</label><textarea id="f-notas" placeholder="Solo para ustedes. No se envían al cliente.">${esc(o?.notas||'')}</textarea></div>
+      <h3>Próximo service</h3>
+      <div class="fila">
+        <div class="campo"><label for="f-proxkm">A los km</label><input id="f-proxkm" inputmode="numeric" placeholder="Ej.: 95000" value="${esc(o?.proxKm||'')}"></div>
+        <div class="campo"><label for="f-proxfecha">O en la fecha</label><input id="f-proxfecha" type="date" value="${esc(o?.proxFecha||'')}"></div>
+      </div>
+      <div class="chips" style="margin:0"><button type="button" class="chip" data-act="prox" data-m="6">+6 meses</button><button type="button" class="chip" data-act="prox" data-m="12">+1 año</button><button type="button" class="chip" data-act="prox-km" data-k="10000">+10.000 km</button><button type="button" class="chip" data-act="prox-km" data-k="5000">+5.000 km</button></div>
+    </div>
+
+    <div class="form-acc" style="margin-top:16px">
+      <a class="btn" href="${editando ? '#orden-'+o.id : '#taller'}">Cancelar</a>
+      <button class="btn pri" type="submit">${ico('check')}${editando ? 'Guardar cambios' : 'Crear orden'}</button>
+    </div>
+  </form>`;
+}
+vForm.despues = (r) => {
+  pintarTareas(); pintarFotosForm();
+  const pat = $('#f-patente');
+  if (pat){ pat.addEventListener('input', () => { pat.value = pat.value.toUpperCase(); buscarPatente(); }); }
+  buscarPatente();
+  $('#f-tarea').addEventListener('keydown', (e) => { if (e.key === 'Enter'){ e.preventDefault(); agregarTarea(); } });
+  $('#f-cliente')?.addEventListener('change', () => { $('#cli-nuevo').hidden = !!$('#f-cliente').value; });
+  $('#f-ctel')?.addEventListener('input', previewTel);
+  $('#f-total').addEventListener('input', (e) => { const n = Number(String(e.target.value).replace(/\D/g,'')); $('#f-total-prev').textContent = n ? plata(n) : 'Podés dejarlo vacío hasta presupuestar.'; });
+  $('#form-orden').addEventListener('submit', guardarOrden);
+  if (!F.editando && !r.id) setTimeout(() => pat?.focus(), 50);
+};
+function previewTel(){
+  const n = normalizarWA($('#f-ctel').value), el = $('#f-ctel-prev');
+  if (!$('#f-ctel').value){ el.textContent = ''; el.className='wa-num'; return; }
+  el.textContent = n ? 'Se enviará a ' + mostrarWA(n) : 'Falta el código de área (ej.: 2972 412345)';
+  el.className = 'wa-num ' + (n ? 'ok' : 'mal');
+}
+function buscarPatente(){
+  const box = $('#veh-encontrado'), nuevo = $('#veh-nuevo');
+  let v = null;
+  if (F.editando) v = vehiculo(F.vehiculoId);
+  else {
+    const p = normPatente($('#f-patente')?.value);
+    v = p.length >= 6 ? db.vehiculos.find(x => normPatente(x.patente) === p) : null;
+  }
+  if (v){
+    const c = cliente(v.clienteId), n = ordenesDeVeh(v.id).length;
+    F.vehiculoId = v.id;
+    box.innerHTML = `<div class="encontrado">${patenteHTML(v.patente)}<div style="flex:1;min-width:180px"><b>${esc(nombreVeh(v))}</b><div class="chico-txt">${esc(c?.nombre||'Sin cliente')} · ${esc(c?.telefono||'')}${F.editando?'':` · ${n} ${n===1?'orden anterior':'órdenes anteriores'}`}</div></div>${F.editando?'':`<a class="btn chico" href="#vehiculo-${v.id}">Ver historial</a>`}${alertaHojasHTML(v.id)}</div>`;
+    nuevo.hidden = true;
+  } else {
+    F.vehiculoId = null; box.innerHTML = '';
+    const p = normPatente($('#f-patente')?.value);
+    nuevo.hidden = p.length < 6;
+    if (p.length >= 6 && !box.dataset.aviso){ }
+    $('#cli-nuevo').hidden = !!$('#f-cliente').value;
+  }
+}
+/* Servicios del taller que se pueden sumar como trabajo con un toque ("Historial del vehículo" no es un trabajo) */
+const serviciosRapidos = () => (db.config.servicios||[]).filter(sv => !/^historial/i.test(sv.trim()));
+function agregarTarea(){
+  const inp = $('#f-tarea'), t = inp.value.trim();
+  if (!t){ inp.focus(); return; }
+  F.tareas.push({id:uid(), texto:t, hecha:false});
+  inp.value = ''; inp.focus(); pintarTareas();
+  $('#c-tareas').classList.remove('err');
+}
+function pintarTareas(){
+  $('#lista-tareas').innerHTML = F.tareas.length
+    ? F.tareas.map((t,i) => `<div class="tarea-ed"><span>${i+1}. ${esc(t.texto)}</span><button type="button" class="btn icono chico" style="width:36px" data-act="quitar-tarea" data-i="${i}" aria-label="Quitar ${esc(t.texto)}">${ico('cerrar')}</button></div>`).join('')
+    : `<p class="muted chico-txt" style="margin:8px 0 0">Todavía no agregaste trabajos.</p>`;
+}
+function pintarFotosForm(){
+  $('#f-fotos').innerHTML = F.fotos.map((f,i) => `<div class="foto"><img src="${f}" alt="Foto ${i+1}"><button type="button" data-act="quitar-foto-form" data-i="${i}" aria-label="Quitar foto ${i+1}">${ico('cerrar')}</button></div>`).join('')
+    + `<label class="add-foto">${ico('camara')}<span>Agregar</span><input type="file" accept="image/*" capture="environment" multiple data-act="foto-form"></label>`;
+}
+function marcarError(id, on){ const el = $('#'+id); if (el) el.classList.toggle('err', on); }
+function guardarOrden(e){
+  e.preventDefault();
+  const errores = [];
+  ['c-patente','c-marca','c-modelo','c-cnombre','c-ctel','c-tareas','c-total'].forEach(id => marcarError(id,false));
+  const pendiente = $('#f-tarea').value.trim();
+  if (pendiente){ F.tareas.push({id:uid(), texto:pendiente, hecha:false}); $('#f-tarea').value=''; pintarTareas(); }
+
+  let vehId = F.vehiculoId, nuevoVeh = null, nuevoCli = null;
+  if (!F.editando && !vehId){
+    const p = normPatente($('#f-patente').value);
+    if (p.length < 6 || p.length > 9){ errores.push('La patente no es válida.'); marcarError('c-patente',true); }
+    const marca = $('#f-marca').value.trim(), modelo = $('#f-modelo').value.trim();
+    if (!marca){ errores.push('Falta la marca.'); marcarError('c-marca',true); }
+    if (!modelo){ errores.push('Falta el modelo.'); marcarError('c-modelo',true); }
+    let cliId = $('#f-cliente').value;
+    if (!cliId){
+      const nom = $('#f-cnombre').value.trim(), tel = $('#f-ctel').value.trim();
+      if (!nom){ errores.push('Falta el nombre del cliente.'); marcarError('c-cnombre',true); }
+      if (!normalizarWA(tel)){ errores.push('El WhatsApp del cliente no es válido (poné código de área).'); marcarError('c-ctel',true); }
+      if (nom && normalizarWA(tel)){ nuevoCli = {id:uid(), nombre:nom, telefono:tel, notas:'', creado:new Date().toISOString()}; cliId = nuevoCli.id; }
+    }
+    if (!errores.length) nuevoVeh = {id:uid(), clienteId:cliId, patente:p, tipo:$('#f-tipo').value, marca, modelo, anio:$('#f-anio').value.trim(), color:$('#f-color').value.trim(), vin:$('#f-vin').value.trim(), motor:$('#f-motor').value.trim()};
+  }
+  if (!F.tareas.length){ errores.push('Agregá al menos un trabajo.'); marcarError('c-tareas',true); }
+  const totalTxt = $('#f-total').value.trim();
+  const total = Number(totalTxt.replace(/\./g,'').replace(',','.')) || 0;
+  if (totalTxt && (isNaN(Number(totalTxt.replace(/\./g,'').replace(',','.'))) || total < 0)){ errores.push('El monto no es válido.'); marcarError('c-total',true); }
+
+  const box = $('#f-errores');
+  if (errores.length){
+    box.hidden = false; box.innerHTML = `<b>Revisá estos datos:</b><ul>${errores.map(x => `<li>${esc(x)}</li>`).join('')}</ul>`;
+    box.focus(); box.scrollIntoView({behavior:'smooth', block:'center'}); return;
+  }
+  if (nuevoCli) db.clientes.push(nuevoCli);
+  if (nuevoVeh){ db.vehiculos.push(nuevoVeh); vehId = nuevoVeh.id; }
+  const datos = {
+    tareas:F.tareas, total:Math.round(total), km:$('#f-km').value.replace(/\D/g,''), fotos:F.fotos,
+    notas:$('#f-notas').value.trim(), proxKm:$('#f-proxkm').value.replace(/\D/g,''), proxFecha:$('#f-proxfecha').value
+  };
+  let id;
+  if (F.editando){ Object.assign(orden(F.ordenId), datos); id = F.ordenId; }
+  else {
+    const est = $('#f-estado').value, ahora = new Date().toISOString();
+    const hist = CONFIG.ESTADOS.slice(0, CONFIG.ESTADOS.indexOf(est)+1).map(e => ({estado:e, fecha:ahora}));
+    const nueva = Object.assign({id:uid(), numero:db.proximoNumero++, vehiculoId:vehId, fechaIngreso:ahora, estado:est, historial:hist, avisos:[], fechaEntrega:''}, datos);
+    db.ordenes.push(nueva); id = nueva.id;
+  }
+  if (!guardar()) return;
+  toast(F.editando ? 'Cambios guardados' : 'Orden creada', 'ok');
+  ir('#orden-' + id);
+}
+
+/* =========================================================
+   VISTAS: VEHÍCULOS
+   ========================================================= */
+let busqVeh = '';
+function listaVehHTML(){
+  const q = sinAcentos(busqVeh), qp = normPatente(busqVeh);
+  const lista = db.vehiculos.filter(v => {
+    if (!q) return true; const c = cliente(v.clienteId);
+    return sinAcentos([nombreVeh(v), c?.nombre, v.tipo, v.color].join(' ')).includes(q) || (qp && normPatente(v.patente).includes(qp));
+  }).sort((a,b) => (ordenesDeVeh(b.id)[0]?.fechaIngreso||'').localeCompare(ordenesDeVeh(a.id)[0]?.fechaIngreso||''));
+  if (!lista.length) return `<div class="vacio"><p>${busqVeh ? 'No hay vehículos que coincidan.' : 'Todavía no cargaste vehículos.'}</p><a class="btn pri" href="#nueva">${ico('mas')}Nueva orden</a></div>`;
+  return `<div class="lista cols">${lista.map(v => { const c = cliente(v.clienteId), ords = ordenesDeVeh(v.id), ult = ords[0];
+    return `<a class="ot" href="#vehiculo-${v.id}"><div class="ot-top">${patenteHTML(v.patente)}<span class="muted chico-txt">${esc(v.tipo)}</span></div>
+      <div class="ot-veh">${esc(nombreVeh(v))}</div><div class="ot-cli">${esc(c?.nombre||'Sin cliente')}</div>
+      ${(() => { const n = hojasAbiertas(v.id).length; return n ? `<div style="margin-top:6px"><span class="badge h-pend">${n} ${n===1?'hoja abierta':'hojas abiertas'}</span></div>` : ''; })()}
+      <div class="ot-bottom"><span>${ords.length} ${ords.length===1?'orden':'órdenes'}</span><span>${ult ? 'Última: '+fecha(ult.fechaIngreso) : 'Sin órdenes'}</span></div></a>`; }).join('')}</div>`;
+}
+function vVehiculos(){
+  return `<div class="vhead"><h1>Vehículos</h1><a class="btn pri" href="#nueva">${ico('mas')}Nueva orden</a></div>
+  <div class="buscar">${ico('buscar')}<label class="sr-only" for="q-veh">Buscar vehículo</label><input id="q-veh" type="search" placeholder="Patente, marca, modelo o dueño" value="${esc(busqVeh)}"></div>
+  <div id="lista-veh">${listaVehHTML()}</div>`;
+}
+vVehiculos.despues = () => { $('#q-veh').addEventListener('input', e => { busqVeh = e.target.value; $('#lista-veh').innerHTML = listaVehHTML(); }); };
+
+function vVehiculo(r){
+  const v = vehiculo(r.id);
+  if (!v) return `<div class="vacio"><p>El vehículo no existe.</p><a class="btn pri" href="#vehiculos">Volver</a></div>`;
+  const c = cliente(v.clienteId), ords = ordenesDeVeh(v.id);
+  const gastado = ords.filter(o => o.estado==='Entregado').reduce((s,o) => s + (Number(o.total)||0), 0);
+  const svc = servicesPendientes().find(s => s.v.id === v.id);
+  return `
+  <div class="vhead">
+    <a class="btn icono" href="#vehiculos" aria-label="Volver">${ico('atras')}</a>
+    <h1>${esc(nombreVeh(v))}</h1>
+    <button class="btn icono" data-act="editar-vehiculo" data-id="${v.id}" aria-label="Editar vehículo">${ico('editar')}</button>
+    <button class="btn icono peligro" data-act="borrar-vehiculo" data-id="${v.id}" aria-label="Borrar vehículo">${ico('borrar')}</button>
+  </div>
+  ${alertaHojasHTML(v.id)}
+  <div class="grid2">
+    <div class="card" style="margin:0">
+      <div style="margin-bottom:12px">${patenteHTML(v.patente, true)}</div>
+      <dl class="kv">
+        <dt>Tipo</dt><dd>${esc(v.tipo)}</dd><dt>Año</dt><dd>${esc(v.anio||'—')}</dd><dt>Color</dt><dd>${esc(v.color||'—')}</dd>
+        <dt>Motor</dt><dd>${esc(v.motor||'—')}</dd><dt>VIN</dt><dd>${esc(v.vin||'—')}</dd>
+        <dt>Dueño</dt><dd>${c ? `<a href="#cliente-${c.id}">${esc(c.nombre)}</a> · ${esc(c.telefono)}` : '—'}</dd>
+      </dl>
+    </div>
+    <div class="card" style="margin:0">
+      <h3>Resumen</h3>
+      <dl class="kv"><dt>Visitas</dt><dd>${ords.length}</dd><dt>Último km</dt><dd>${ords.length ? miles(Math.max(...ords.map(o=>Number(o.km)||0)))+' km' : '—'}</dd>
+      <dt>Total histórico</dt><dd>${plata(gastado)}</dd>
+      <dt>Próximo service</dt><dd>${svc ? textoService(svc) : '—'}</dd></dl>
+      <a class="btn pri bloque" style="margin-top:14px" href="#nueva-${v.id}">${ico('mas')}Nueva orden para este vehículo</a>
+    </div>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:20px 0 10px"><h2 style="flex:1">Hojas del vehículo</h2>
+    <button class="btn pri" data-act="nueva-hoja" data-vid="${v.id}">${ico('mas')}Nueva hoja</button></div>
+  ${(() => { const hs = hojasDeVeh(v.id); return hs.length ? `<div class="lista cols">${hs.map(h => tarjetaHoja(h,false)).join('')}</div>` : `<div class="vacio"><p style="margin:0">Sin hojas. Usalas para anotar quejas, cambios que dejó para más adelante, garantías u otras situaciones.</p></div>`; })()}
+  <h2 style="margin:20px 0 10px">Historial de trabajos</h2>
+  ${ords.length ? `<div class="hist">${ords.map(o => `<a href="#orden-${o.id}"><div class="h-top"><span>${fecha(o.fechaIngreso)} · ${nroOrden(o.numero)}${o.km?' · '+miles(o.km)+' km':''}</span>${badge(o.estado)}</div>
+    <div class="h-t">${o.tareas.map(t => esc(t.texto)).join(' · ') || '<span class="muted">Sin detalle</span>'}</div>
+    <div class="h-tot">${o.total ? plata(o.total) : ''}</div></a>`).join('')}</div>`
+    : `<div class="vacio"><p>Este vehículo todavía no tiene trabajos.</p></div>`}`;
+}
+function textoService(s){
+  const partes = [];
+  if (s.o.proxKm) partes.push('a los ' + miles(s.o.proxKm) + ' km');
+  if (s.o.proxFecha) partes.push('el ' + fecha(s.o.proxFecha+'T12:00:00'));
+  return partes.join(' o ');
+}
+function modalVehiculo(id){
+  const v = vehiculo(id); if (!v) return;
+  const opc = db.clientes.slice().sort((a,b)=>a.nombre.localeCompare(b.nombre)).map(c => `<option value="${c.id}" ${c.id===v.clienteId?'selected':''}>${esc(c.nombre)}</option>`).join('');
+  abrirModal('Editar vehículo', `<form id="form-veh" novalidate>
+    <div class="campo" id="mv-c-pat"><label for="mv-pat">Patente</label><input id="mv-pat" class="patente-in" value="${esc(v.patente)}"><span class="err-msg">Patente inválida o repetida.</span></div>
+    <div class="fila"><div class="campo"><label for="mv-tipo">Tipo</label><select id="mv-tipo">${CONFIG.TIPOS.map(t=>`<option ${t===v.tipo?'selected':''}>${t}</option>`).join('')}</select></div>
+      <div class="campo"><label for="mv-anio">Año</label><input id="mv-anio" inputmode="numeric" value="${esc(v.anio)}"></div></div>
+    <div class="fila"><div class="campo" id="mv-c-marca"><label for="mv-marca">Marca</label><input id="mv-marca" value="${esc(v.marca)}"><span class="err-msg">Completá la marca.</span></div>
+      <div class="campo" id="mv-c-modelo"><label for="mv-modelo">Modelo</label><input id="mv-modelo" value="${esc(v.modelo)}"><span class="err-msg">Completá el modelo.</span></div></div>
+    <div class="fila"><div class="campo"><label for="mv-color">Color</label><input id="mv-color" value="${esc(v.color)}"></div>
+      <div class="campo"><label for="mv-motor">Motor / combustible</label><input id="mv-motor" value="${esc(v.motor)}"></div></div>
+    <div class="campo"><label for="mv-vin">VIN / chasis</label><input id="mv-vin" value="${esc(v.vin)}"></div>
+    <div class="campo"><label for="mv-cli">Dueño</label><select id="mv-cli">${opc}</select></div>
+    <div class="form-acc"><button type="button" class="btn" data-act="cerrar-modal">Cancelar</button><button class="btn pri" type="submit">Guardar</button></div></form>`);
+  $('#form-veh').onsubmit = (e) => {
+    e.preventDefault();
+    const p = normPatente($('#mv-pat').value), marca = $('#mv-marca').value.trim(), modelo = $('#mv-modelo').value.trim();
+    const repetida = db.vehiculos.some(x => x.id !== v.id && normPatente(x.patente) === p);
+    $('#mv-c-pat').classList.toggle('err', p.length<6 || repetida); $('#mv-c-marca').classList.toggle('err', !marca); $('#mv-c-modelo').classList.toggle('err', !modelo);
+    if (p.length<6 || repetida || !marca || !modelo) return;
+    Object.assign(v, {patente:p, tipo:$('#mv-tipo').value, anio:$('#mv-anio').value.trim(), marca, modelo, color:$('#mv-color').value.trim(), motor:$('#mv-motor').value.trim(), vin:$('#mv-vin').value.trim(), clienteId:$('#mv-cli').value});
+    guardar(); cerrarModal(); render(); toast('Vehículo actualizado','ok');
+  };
+}
+
+/* =========================================================
+   VISTAS: CLIENTES
+   ========================================================= */
+let busqCli = '';
+function listaCliHTML(){
+  const q = sinAcentos(busqCli), qd = busqCli.replace(/\D/g,'');
+  const lista = db.clientes.filter(c => !q || sinAcentos(c.nombre).includes(q) || (qd && c.telefono.replace(/\D/g,'').includes(qd)) || vehiculosDeCli(c.id).some(v => normPatente(v.patente).includes(normPatente(busqCli))))
+    .sort((a,b) => a.nombre.localeCompare(b.nombre));
+  if (!lista.length) return `<div class="vacio"><p>${busqCli ? 'No hay clientes que coincidan.' : 'Todavía no cargaste clientes.'}</p><button class="btn pri" data-act="nuevo-cliente">${ico('mas')}Agregar el primero</button></div>`;
+  return `<div class="lista cols">${lista.map(c => { const vs = vehiculosDeCli(c.id);
+    return `<a class="ot" href="#cliente-${c.id}"><div class="ot-veh">${esc(c.nombre)}</div><div class="ot-cli">${esc(c.telefono)}</div>
+      <div class="ot-tareas" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">${vs.map(v => patenteHTML(v.patente)).join('') || '<span class="muted">Sin vehículos</span>'}</div></a>`; }).join('')}</div>`;
+}
+function vClientes(){
+  return `<div class="vhead"><h1>Clientes</h1><button class="btn pri" data-act="nuevo-cliente">${ico('mas')}Nuevo cliente</button></div>
+  <div class="buscar">${ico('buscar')}<label class="sr-only" for="q-cli">Buscar cliente</label><input id="q-cli" type="search" placeholder="Nombre, teléfono o patente" value="${esc(busqCli)}"></div>
+  <div id="lista-cli">${listaCliHTML()}</div>`;
+}
+vClientes.despues = () => { $('#q-cli').addEventListener('input', e => { busqCli = e.target.value; $('#lista-cli').innerHTML = listaCliHTML(); }); };
+
+function vCliente(r){
+  const c = cliente(r.id);
+  if (!c) return `<div class="vacio"><p>El cliente no existe.</p><a class="btn pri" href="#clientes">Volver</a></div>`;
+  const vs = vehiculosDeCli(c.id), num = normalizarWA(c.telefono);
+  const ords = db.ordenes.filter(o => vs.some(v => v.id === o.vehiculoId)).sort((a,b) => b.fechaIngreso.localeCompare(a.fechaIngreso));
+  return `
+  <div class="vhead">
+    <a class="btn icono" href="#clientes" aria-label="Volver">${ico('atras')}</a>
+    <h1>${esc(c.nombre)}</h1>
+    <button class="btn icono" data-act="editar-cliente" data-id="${c.id}" aria-label="Editar cliente">${ico('editar')}</button>
+    <button class="btn icono peligro" data-act="borrar-cliente" data-id="${c.id}" aria-label="Borrar cliente">${ico('borrar')}</button>
+  </div>
+  <div class="card">
+    <dl class="kv"><dt>WhatsApp</dt><dd>${esc(c.telefono)} ${num ? '' : '<span class="badge e-presupuestado">Revisar número</span>'}</dd>
+    <dt>Notas</dt><dd style="white-space:pre-wrap">${esc(c.notas||'—')}</dd></dl>
+    ${botonesMensajes(c.id, null)}
+  </div>
+  <h2 style="margin:20px 0 10px">Vehículos</h2>
+  ${vs.length ? `<div class="lista cols">${vs.map(v => `<a class="ot" href="#vehiculo-${v.id}"><div class="ot-top">${patenteHTML(v.patente)}<span class="muted chico-txt">${esc(v.tipo)}</span></div><div class="ot-veh">${esc(nombreVeh(v))}</div><div class="ot-cli">${ordenesDeVeh(v.id).length} órdenes</div></a>`).join('')}</div>`
+    : `<div class="vacio"><p>Sin vehículos. Se agregan al crear una orden.</p></div>`}
+  <h2 style="margin:20px 0 10px">Últimas órdenes</h2>
+  ${ords.length ? `<div class="lista">${ords.slice(0,6).map(tarjetaOrden).join('')}</div>` : `<div class="vacio"><p>Sin órdenes todavía.</p></div>`}`;
+}
+function modalCliente(id){
+  const c = id ? cliente(id) : {nombre:'', telefono:'', notas:''};
+  abrirModal(id ? 'Editar cliente' : 'Nuevo cliente', `<form id="form-cli" novalidate>
+    <div class="campo" id="mc-c-nom"><label for="mc-nom">Nombre</label><input id="mc-nom" value="${esc(c.nombre)}"><span class="err-msg">Completá el nombre.</span></div>
+    <div class="campo" id="mc-c-tel"><label for="mc-tel">WhatsApp</label><input id="mc-tel" type="tel" inputmode="tel" value="${esc(c.telefono)}" placeholder="2972 412345"><span class="wa-num" id="mc-prev"></span><span class="err-msg">Número inválido: poné código de área + número.</span></div>
+    <div class="campo"><label for="mc-notas">Notas</label><textarea id="mc-notas">${esc(c.notas)}</textarea></div>
+    <div class="form-acc"><button type="button" class="btn" data-act="cerrar-modal">Cancelar</button><button class="btn pri" type="submit">Guardar</button></div></form>`);
+  const prev = () => { const n = normalizarWA($('#mc-tel').value); $('#mc-prev').textContent = $('#mc-tel').value ? (n ? 'Se enviará a ' + mostrarWA(n) : 'Falta el código de área') : ''; $('#mc-prev').className = 'wa-num ' + (n?'ok':'mal'); };
+  $('#mc-tel').addEventListener('input', prev); prev();
+  $('#form-cli').onsubmit = (e) => {
+    e.preventDefault();
+    const nom = $('#mc-nom').value.trim(), tel = $('#mc-tel').value.trim();
+    $('#mc-c-nom').classList.toggle('err', !nom); $('#mc-c-tel').classList.toggle('err', !normalizarWA(tel));
+    if (!nom || !normalizarWA(tel)) return;
+    if (id) Object.assign(c, {nombre:nom, telefono:tel, notas:$('#mc-notas').value.trim()});
+    else db.clientes.push({id:uid(), nombre:nom, telefono:tel, notas:$('#mc-notas').value.trim(), creado:new Date().toISOString()});
+    guardar(); cerrarModal(); render(); toast(id ? 'Cliente actualizado' : 'Cliente agregado','ok');
+  };
+}
+
+/* =========================================================
+   VISTA: PRÓXIMOS SERVICES
+   ========================================================= */
+function vServices(){
+  const lista = servicesPendientes();
+  const grupo = (nivel, titulo, clase) => {
+    const items = lista.filter(s => s.nivel === nivel);
+    if (!items.length) return '';
+    return `<h2 style="margin:18px 0 10px">${titulo} <span class="muted" style="font-size:16px">(${items.length})</span></h2><div class="lista">${items.map(s => {
+      const c = cliente(s.v.clienteId);
+      const cuando = s.dias === null ? '' : s.dias < 0 ? `Venció hace ${-s.dias} días` : s.dias === 0 ? 'Vence hoy' : `Faltan ${s.dias} días`;
+      return `<a class="ot" href="#vehiculo-${s.v.id}"><div class="svc">${patenteHTML(s.v.patente)}<div><div class="ot-veh">${esc(nombreVeh(s.v))}</div><div class="ot-cli">${esc(c?.nombre||'')} · ${esc(c?.telefono||'')}</div></div>${cuando ? `<span class="badge ${clase}">${cuando}</span>` : ''}</div>
+        <div class="ot-tareas">Próximo service ${textoService(s)}${s.o.proxKm ? ` · último registro: ${miles(s.ultimoKm)} km` : ''}</div></a>`; }).join('')}</div>`;
+  };
+  return `<div class="vhead"><h1>Próximos services</h1><div class="sub">Se calcula con el «próximo service» que cargan en cada orden.</div></div>
+  ${lista.length ? grupo('vencido','Vencidos','e-reparacion') + grupo('proximo',`En los próximos ${CONFIG.DIAS_AVISO_SERVICE} días`,'e-presupuestado') + grupo('ok','Más adelante','e-aprobado')
+    : `<div class="vacio"><p>Todavía no hay services programados. Cargalos en el campo «Próximo service» de cada orden.</p></div>`}`;
+}
+
+/* =========================================================
+   HOJAS DEL VEHÍCULO (quejas, pendientes, garantías, observaciones)
+   ========================================================= */
+const TIPOS_HOJA = {'Queja / reclamo':'h-queja', 'Pendiente':'h-pend', 'Garantía':'h-gar', 'Observación':'h-obs'};
+const hoja = (id) => db.hojas.find(h => h.id === id);
+const hojasDeVeh = (vid) => db.hojas.filter(h => h.vehiculoId === vid).sort((a,b) => (b.fecha||'').localeCompare(a.fecha||''));
+const hojasAbiertas = (vid) => vid ? db.hojas.filter(h => h.vehiculoId === vid && h.estado === 'Abierta') : [];
+const badgeHoja = (h) => `<span class="badge ${TIPOS_HOJA[h.tipo]||'h-obs'}">${esc(h.tipo)}</span>`;
+const badgeEstHoja = (h) => `<span class="badge ${h.estado==='Abierta'?'e-reparacion':'e-listo'}">${esc(h.estado)}</span>`;
+const fechaD = (d) => d ? fecha(d + 'T12:00:00') : '—';
+const hoyKey = () => new Date().toLocaleDateString('en-CA', {timeZone:TZ});
+const diaKey = (iso) => iso ? new Date(iso).toLocaleDateString('en-CA', {timeZone:TZ}) : '';
+function recordarTxt(h){
+  if (!h.recordar || h.estado !== 'Abierta') return '';
+  const d = Math.round((new Date(h.recordar+'T12:00:00') - new Date(hoyKey()+'T12:00:00'))/86400000);
+  const txt = d < 0 ? `Recordar: venció hace ${-d} días` : d === 0 ? 'Recordar: hoy' : `Recordar: ${fechaD(h.recordar)}`;
+  return `<span class="badge ${d <= 0 ? 'h-queja' : 'h-gar'}">${txt}</span>`;
+}
+function tarjetaHoja(h, conVeh=true){
+  const v = vehiculo(h.vehiculoId), c = cliente(v?.clienteId), o = h.ordenId ? orden(h.ordenId) : null;
+  const d = h.descripcion.length > 150 ? h.descripcion.slice(0,150) + '…' : h.descripcion;
+  return `<a class="ot" href="#hoja-${h.id}">
+    <div class="ot-top"><span style="display:flex;gap:6px;flex-wrap:wrap">${badgeHoja(h)}${recordarTxt(h)}</span>${badgeEstHoja(h)}</div>
+    ${conVeh ? `<div class="h-veh" style="display:flex;gap:8px;align-items:center;margin:6px 0 2px">${patenteHTML(v?.patente||'—')}<b>${esc(nombreVeh(v))}</b></div><div class="ot-cli">${esc(c?.nombre||'')}</div>` : ''}
+    <div class="ot-tareas">${esc(d)}</div>
+    <div class="ot-bottom"><span>${fechaD(h.fecha)}${o ? ' · orden ' + nroOrden(o.numero) : ''}${h.fotos?.length ? ' · ' + h.fotos.length + ' foto' + (h.fotos.length>1?'s':'') : ''}</span></div>
+  </a>`;
+}
+/* Aviso naranja cuando el vehículo tiene hojas abiertas */
+function alertaHojasHTML(vid){
+  const hs = hojasAbiertas(vid);
+  if (!hs.length) return '';
+  return `<div class="alerta-hojas" role="note"><b>${ico('alerta')}Este vehículo tiene ${hs.length} ${hs.length===1?'hoja abierta':'hojas abiertas'}</b>
+    <ul>${hs.map(h => `<li><a href="#hoja-${h.id}">${esc(h.tipo)}</a> (${fechaD(h.fecha)}): ${esc(h.descripcion.length > 90 ? h.descripcion.slice(0,90)+'…' : h.descripcion)}</li>`).join('')}</ul></div>`;
+}
+
+function vHoja(r){
+  const h = hoja(r.id);
+  if (!h) return `<div class="vacio"><p>La hoja no existe o fue borrada.</p><a class="btn pri" href="#historial">Ir al historial</a></div>`;
+  const v = vehiculo(h.vehiculoId), c = cliente(v?.clienteId), o = h.ordenId ? orden(h.ordenId) : null;
+  const fotos = (h.fotos||[]).map((f,i) => `<div class="foto"><img src="${f}" alt="Foto ${i+1} de la hoja" data-act="ver-foto-hoja" data-i="${i}" loading="lazy"><button data-act="borrar-foto-hoja" data-i="${i}" aria-label="Borrar foto ${i+1}">${ico('cerrar')}</button></div>`).join('');
+  return `
+  <div class="vhead">
+    <a class="btn icono" href="#vehiculo-${v?.id}" aria-label="Volver al vehículo">${ico('atras')}</a>
+    <h1>${esc(h.tipo)}</h1>
+    <button class="btn icono" data-act="editar-hoja" data-id="${h.id}" aria-label="Editar hoja">${ico('editar')}</button>
+    <button class="btn icono peligro" data-act="borrar-hoja" data-id="${h.id}" aria-label="Borrar hoja">${ico('borrar')}</button>
+  </div>
+  <div class="card">
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">${badgeHoja(h)}${badgeEstHoja(h)}${recordarTxt(h)}</div>
+    <dl class="kv">
+      <dt>Fecha</dt><dd>${fechaD(h.fecha)}</dd>
+      <dt>Vehículo</dt><dd>${patenteHTML(v?.patente||'—')} <a href="#vehiculo-${v?.id}">${esc(nombreVeh(v))}</a></dd>
+      <dt>Cliente</dt><dd>${c ? `<a href="#cliente-${c.id}">${esc(c.nombre)}</a> · ${esc(c.telefono)}` : '—'}</dd>
+      <dt>Orden</dt><dd>${o ? `<a href="#orden-${o.id}">${nroOrden(o.numero)}</a> · ${fecha(o.fechaIngreso)}` : '—'}</dd>
+      <dt>Recordar</dt><dd>${h.recordar ? fechaD(h.recordar) : '—'}</dd>
+    </dl>
+  </div>
+  <div class="card"><h3>Qué pasó</h3><p class="desc-hoja">${esc(h.descripcion)}</p></div>
+  ${h.estado === 'Resuelta' ? `<div class="card" style="border-color:#b7e0c6;background:#f4fbf6"><h3 style="color:var(--ok)">Resuelta el ${fecha(h.resueltaFecha)}</h3><p class="desc-hoja">${h.resolucion ? esc(h.resolucion) : '<span class="muted">Sin detalle de la solución.</span>'}</p></div>` : ''}
+  <div class="card"><h3>Fotos</h3>
+    <div class="fotos">${fotos}<label class="add-foto">${ico('camara')}<span>Agregar</span><input type="file" accept="image/*" capture="environment" multiple data-act="subir-foto-hoja"></label></div>
+  </div>
+  <div class="form-acc" style="margin-top:12px">
+    ${h.estado === 'Abierta' ? `<button class="btn pri" data-act="resolver-hoja" data-id="${h.id}">${ico('check')}Marcar como resuelta</button>` : `<button class="btn" data-act="reabrir-hoja" data-id="${h.id}">${ico('reset')}Volver a abrir</button>`}
+    ${v ? `<a class="btn" href="#nueva-${v.id}">${ico('mas')}Nueva orden para este auto</a>` : ''}
+  </div>`;
+}
+vHoja.despues = (r) => { window.__hojaActual = r.id; };
+
+let HF = null; // fotos del formulario de hoja
+function modalHoja({vid, oid, id}){
+  const h = id ? hoja(id) : null;
+  vid = h ? h.vehiculoId : vid;
+  const v = vehiculo(vid); if (!v) return;
+  HF = {fotos: h ? [...(h.fotos||[])] : []};
+  const ords = ordenesDeVeh(vid);
+  const ordSel = h ? h.ordenId : (oid || '');
+  abrirModal(h ? 'Editar hoja' : 'Nueva hoja', `<form id="form-hoja" novalidate>
+    <p class="chico-txt" style="margin-top:0">${patenteHTML(v.patente)} <b>${esc(nombreVeh(v))}</b></p>
+    <div class="campo"><label for="hf-tipo">Tipo</label><select id="hf-tipo">${Object.keys(TIPOS_HOJA).map(t => `<option ${h?.tipo===t?'selected':''}>${t}</option>`).join('')}</select></div>
+    <div class="campo" id="hf-c-desc"><label for="hf-desc">¿Qué pasó?</label><textarea id="hf-desc" rows="5" placeholder="Ej.: volvió con ruido en la rueda delantera izquierda…">${esc(h?.descripcion||'')}</textarea><span class="err-msg">Contá brevemente qué pasó.</span></div>
+    <div class="fila">
+      <div class="campo"><label for="hf-fecha">Fecha</label><input id="hf-fecha" type="date" value="${esc(h?.fecha || hoyKey())}"></div>
+      <div class="campo"><label for="hf-rec">Fecha para recordar</label><input id="hf-rec" type="date" value="${esc(h?.recordar||'')}"><span class="ayuda">Opcional</span></div>
+    </div>
+    <div class="campo"><label for="hf-orden">Vinculada a la orden</label><select id="hf-orden"><option value="">Ninguna</option>${ords.map(o => `<option value="${o.id}" ${ordSel===o.id?'selected':''}>${nroOrden(o.numero)} · ${fecha(o.fechaIngreso)} · ${esc(o.tareas[0]?.texto||'')}</option>`).join('')}</select></div>
+    ${h ? `<div class="campo"><label for="hf-estado">Estado</label><select id="hf-estado"><option ${h.estado==='Abierta'?'selected':''}>Abierta</option><option ${h.estado==='Resuelta'?'selected':''}>Resuelta</option></select></div>` : ''}
+    <div class="campo"><label>Fotos</label><div class="fotos" id="hf-fotos"></div></div>
+    <div class="form-acc"><button type="button" class="btn" data-act="cerrar-modal">Cancelar</button><button class="btn pri" type="submit">${ico('check')}${h ? 'Guardar' : 'Crear hoja'}</button></div>
+  </form>`);
+  pintarFotosHF();
+  $('#hf-desc').focus();
+  $('#hf-desc').addEventListener('input', () => $('#hf-c-desc').classList.remove('err'));
+  $('#form-hoja').onsubmit = (e) => {
+    e.preventDefault();
+    const desc = $('#hf-desc').value.trim();
+    if (!desc){ $('#hf-c-desc').classList.add('err'); $('#hf-desc').focus(); return; }
+    const datos = {tipo:$('#hf-tipo').value, descripcion:desc, fecha:$('#hf-fecha').value || hoyKey(), recordar:$('#hf-rec').value, ordenId:$('#hf-orden').value, fotos:HF.fotos};
+    let destino;
+    if (h){
+      const est = $('#hf-estado').value;
+      if (est !== h.estado){ datos.estado = est; datos.resueltaFecha = est === 'Resuelta' ? new Date().toISOString() : ''; if (est === 'Abierta') datos.resolucion = ''; }
+      Object.assign(h, datos); destino = h.id;
+    } else {
+      const nueva = Object.assign({id:uid(), vehiculoId:vid, estado:'Abierta', resolucion:'', resueltaFecha:''}, datos);
+      db.hojas.push(nueva); destino = nueva.id;
+    }
+    if (!guardar()) return;
+    cerrarModal(); toast(h ? 'Hoja actualizada' : 'Hoja creada','ok');
+    if (location.hash === '#hoja-' + destino) render(); else ir('#hoja-' + destino);
+  };
+}
+function pintarFotosHF(){
+  $('#hf-fotos').innerHTML = HF.fotos.map((f,i) => `<div class="foto"><img src="${f}" alt="Foto ${i+1}"><button type="button" data-act="quitar-foto-hf" data-i="${i}" aria-label="Quitar foto ${i+1}">${ico('cerrar')}</button></div>`).join('')
+    + `<label class="add-foto">${ico('camara')}<span>Agregar</span><input type="file" accept="image/*" capture="environment" multiple data-act="foto-hf"></label>`;
+}
+
+/* =========================================================
+   VISTA: HISTORIAL (órdenes y hojas con filtros)
+   ========================================================= */
+const H_DEF = {tab:'ordenes', q:'', periodo:'todo', desde:'', hasta:'', por:'ingreso', tipo:'', marca:'', estado:'', tipoHoja:'', soloAbiertas:false};
+let H = {...H_DEF}, hFiltrosAbiertos = true;
+function lunesKey(){ const d = new Date(hoyKey()+'T12:00:00'); d.setDate(d.getDate() - (d.getDay()+6)%7); return d.toISOString().slice(0,10); }
+function enPeriodo(key){
+  if (!key) return false;
+  const hoy = hoyKey();
+  switch(H.periodo){
+    case 'hoy': return key === hoy;
+    case 'semana': return key >= lunesKey() && key <= hoy;
+    case 'mes': return key.slice(0,7) === hoy.slice(0,7);
+    case 'anio': return key.slice(0,4) === hoy.slice(0,4);
+    case 'rango': return (!H.desde || key >= H.desde) && (!H.hasta || key <= H.hasta);
+    default: return true;
+  }
+}
+const fechaRefOrden = (o) => H.por === 'entrega' ? o.fechaEntrega : o.fechaIngreso;
+function coincideVeh(v){
+  if (H.tipo && v?.tipo !== H.tipo) return false;
+  if (H.marca && v?.marca !== H.marca) return false;
+  if (H.soloAbiertas && !hojasAbiertas(v?.id).length) return false;
+  return true;
+}
+function histOrdenes(){
+  const q = sinAcentos(H.q.trim()), qp = normPatente(H.q);
+  return db.ordenes.filter(o => {
+    const v = vehiculo(o.vehiculoId), c = cliente(v?.clienteId), ref = fechaRefOrden(o);
+    if (H.por === 'entrega' && !ref) return false;
+    if (!enPeriodo(diaKey(ref))) return false;
+    if (H.estado && o.estado !== H.estado) return false;
+    if (!coincideVeh(v)) return false;
+    if (q){ const t = sinAcentos([nombreVeh(v), c?.nombre, c?.telefono, o.tareas.map(x=>x.texto).join(' '), nroOrden(o.numero), o.notas].join(' '));
+      if (!t.includes(q) && !(qp && normPatente(v?.patente).includes(qp))) return false; }
+    return true;
+  }).sort((a,b) => (fechaRefOrden(b)||'').localeCompare(fechaRefOrden(a)||''));
+}
+function histHojas(){
+  const q = sinAcentos(H.q.trim()), qp = normPatente(H.q);
+  return db.hojas.filter(h => {
+    const v = vehiculo(h.vehiculoId), c = cliente(v?.clienteId);
+    if (!enPeriodo(h.fecha)) return false;
+    if (H.estado && h.estado !== H.estado) return false;
+    if (H.tipoHoja && h.tipo !== H.tipoHoja) return false;
+    if (H.tipo && v?.tipo !== H.tipo) return false;
+    if (H.marca && v?.marca !== H.marca) return false;
+    if (H.soloAbiertas && h.estado !== 'Abierta') return false;
+    if (q){ const t = sinAcentos([nombreVeh(v), c?.nombre, c?.telefono, h.descripcion, h.tipo, h.resolucion].join(' '));
+      if (!t.includes(q) && !(qp && normPatente(v?.patente).includes(qp))) return false; }
+    return true;
+  }).sort((a,b) => (b.fecha||'').localeCompare(a.fecha||''));
+}
+function filtrosActivos(){ return ['q','tipo','marca','estado','tipoHoja','desde','hasta'].filter(k => H[k]).length + (H.periodo !== 'todo' ? 1 : 0) + (H.soloAbiertas ? 1 : 0) + (H.por !== 'ingreso' && H.tab === 'ordenes' ? 1 : 0); }
+const PERIODOS = [['todo','Todo'],['hoy','Hoy'],['semana','Esta semana'],['mes','Este mes'],['anio','Este año'],['rango','Elegir fechas']];
+function resultadosHistHTML(){
+  if (H.tab === 'ordenes'){
+    const l = histOrdenes(), total = l.reduce((s,o) => s + (Number(o.total)||0), 0);
+    const res = `<div class="resumen-hist"><span><b>${l.length}</b> ${l.length===1?'trabajo':'trabajos'}</span><span>Total <b>${plata(total)}</b></span></div>`;
+    if (!l.length) return res + `<div class="vacio"><p>No hay trabajos con estos filtros.</p><button class="btn" data-act="h-limpiar">Limpiar filtros</button></div>`;
+    return res + `<div class="hist">${l.map(o => { const v = vehiculo(o.vehiculoId), c = cliente(v?.clienteId);
+      return `<a href="#orden-${o.id}"><div class="h-top"><span>${H.por==='entrega'?'Entregado':'Ingresó'} ${fecha(fechaRefOrden(o))} · ${nroOrden(o.numero)}</span>${badge(o.estado)}</div>
+        <div class="h-veh">${patenteHTML(v?.patente||'—')}<b>${esc(nombreVeh(v))}</b><span class="muted chico-txt">${esc(v?.tipo||'')}</span></div>
+        <div class="chico-txt muted" style="margin-top:2px">${esc(c?.nombre||'')}</div>
+        <div class="h-t">${o.tareas.map(t => esc(t.texto)).join(' · ') || '<span class="muted">Sin detalle</span>'}</div>
+        <div class="h-tot">${o.total ? plata(o.total) : ''}</div></a>`; }).join('')}</div>`;
+  }
+  const l = histHojas(), ab = l.filter(h => h.estado === 'Abierta').length;
+  const res = `<div class="resumen-hist"><span><b>${l.length}</b> ${l.length===1?'hoja':'hojas'}</span><span><b>${ab}</b> ${ab===1?'abierta':'abiertas'}</span></div>`;
+  if (!l.length) return res + `<div class="vacio"><p>No hay hojas con estos filtros.</p><button class="btn" data-act="h-limpiar">Limpiar filtros</button></div>`;
+  return res + `<div class="lista cols">${l.map(h => tarjetaHoja(h, true)).join('')}</div>`;
+}
+function vHistorial(){
+  const marcas = [...new Set(db.vehiculos.map(v => v.marca).filter(Boolean))].sort();
+  const n = filtrosActivos();
+  const sel = (id, key, opciones, vacio) => `<select id="${id}" data-h="${key}"><option value="">${vacio}</option>${opciones.map(o => `<option ${H[key]===o?'selected':''}>${esc(o)}</option>`).join('')}</select>`;
+  return `
+  <div class="vhead"><h1 style="min-width:170px">Historial</h1>
+    <button class="btn" data-act="h-copiar">${ico('check')}<span>Copiar Excel</span></button>
+    <button class="btn" data-act="h-imprimir">${ico('imprimir')}<span>PDF</span></button></div>
+  <div class="chips" role="group" aria-label="Qué ver">
+    <button class="chip ${H.tab==='ordenes'?'on':''}" data-act="h-tab" data-t="ordenes" aria-pressed="${H.tab==='ordenes'}">${ico('taller')}Órdenes <span class="n">${db.ordenes.length}</span></button>
+    <button class="chip ${H.tab==='hojas'?'on':''}" data-act="h-tab" data-t="hojas" aria-pressed="${H.tab==='hojas'}">${ico('hoja')}Hojas <span class="n">${db.hojas.length}</span></button>
+  </div>
+  <div class="buscar">${ico('buscar')}<label class="sr-only" for="h-q">Buscar en el historial</label>
+    <input id="h-q" type="search" data-h="q" placeholder="Patente, cliente, teléfono o ${H.tab==='ordenes'?'trabajo':'texto de la hoja'}" value="${esc(H.q)}"></div>
+  <details class="card filtros" id="h-det" ${hFiltrosAbiertos?'open':''}>
+    <summary>${ico('filtro')}Filtros <span class="n" id="h-n">${n ? n + (n===1?' activo':' activos') : ''}</span></summary>
+    <div class="filtros-in">
+      <div class="chips" role="group" aria-label="Período">${PERIODOS.map(([k,t]) => `<button type="button" class="chip ${H.periodo===k?'on':''}" data-act="h-periodo" data-p="${k}" aria-pressed="${H.periodo===k}">${t}</button>`).join('')}</div>
+      <div class="fila" id="h-rango" ${H.periodo==='rango'?'':'hidden'}>
+        <div class="campo"><label for="h-desde">Desde</label><input id="h-desde" type="date" data-h="desde" value="${esc(H.desde)}"></div>
+        <div class="campo"><label for="h-hasta">Hasta</label><input id="h-hasta" type="date" data-h="hasta" value="${esc(H.hasta)}"></div>
+      </div>
+      <div class="fila">
+        ${H.tab==='ordenes' ? `<div class="campo"><label for="h-por">Buscar por fecha de</label><select id="h-por" data-h="por"><option value="ingreso" ${H.por==='ingreso'?'selected':''}>Ingreso</option><option value="entrega" ${H.por==='entrega'?'selected':''}>Entrega</option></select></div>`
+          : `<div class="campo"><label for="h-th">Tipo de hoja</label>${sel('h-th','tipoHoja',Object.keys(TIPOS_HOJA),'Todos los tipos')}</div>`}
+        <div class="campo"><label for="h-est">Estado</label>${sel('h-est','estado', H.tab==='ordenes' ? CONFIG.ESTADOS : ['Abierta','Resuelta'], 'Todos los estados')}</div>
+      </div>
+      <div class="fila">
+        <div class="campo"><label for="h-tipo">Tipo de vehículo</label>${sel('h-tipo','tipo',CONFIG.TIPOS,'Todos')}</div>
+        <div class="campo"><label for="h-marca">Marca</label>${sel('h-marca','marca',marcas,'Todas')}</div>
+      </div>
+      <label class="check-fila"><input type="checkbox" data-h="soloAbiertas" ${H.soloAbiertas?'checked':''}> Solo autos con hojas abiertas</label>
+      <button type="button" class="btn chico" data-act="h-limpiar" style="margin-top:6px">${ico('reset')}Limpiar filtros</button>
+    </div>
+  </details>
+  <div id="hist-res">${resultadosHistHTML()}</div>`;
+}
+vHistorial.despues = () => {
+  const actualizar = () => { $('#hist-res').innerHTML = resultadosHistHTML(); const n = filtrosActivos(); $('#h-n').textContent = n ? n + (n===1?' activo':' activos') : ''; };
+  $$('[data-h]').forEach(el => {
+    const ev = el.tagName === 'SELECT' || el.type === 'checkbox' || el.type === 'date' ? 'change' : 'input';
+    el.addEventListener(ev, () => { H[el.dataset.h] = el.type === 'checkbox' ? el.checked : el.value; actualizar(); });
+  });
+  $('#h-det').addEventListener('toggle', (e) => { hFiltrosAbiertos = e.target.open; });
+};
+/* Filas para exportar lo filtrado */
+function filasHistorial(){
+  if (H.tab === 'ordenes'){
+    const f = [['Orden','Ingreso','Entrega','Estado','Patente','Tipo','Vehículo','Cliente','WhatsApp','Km','Trabajos','Total']];
+    histOrdenes().forEach(o => { const v = vehiculo(o.vehiculoId), c = cliente(v?.clienteId);
+      f.push([nroOrden(o.numero), fecha(o.fechaIngreso), o.fechaEntrega?fecha(o.fechaEntrega):'', o.estado, v?.patente||'', v?.tipo||'', nombreVeh(v), c?.nombre||'', c?.telefono||'', o.km||'', o.tareas.map(t=>t.texto).join(' | '), o.total||0]); });
+    return f;
+  }
+  const f = [['Fecha','Tipo','Estado','Patente','Vehículo','Cliente','Orden','Descripción','Recordar','Resolución']];
+  histHojas().forEach(h => { const v = vehiculo(h.vehiculoId), c = cliente(v?.clienteId), o = h.ordenId ? orden(h.ordenId) : null;
+    f.push([fechaD(h.fecha), h.tipo, h.estado, v?.patente||'', nombreVeh(v), c?.nombre||'', o?nroOrden(o.numero):'', h.descripcion, h.recordar?fechaD(h.recordar):'', h.resolucion||'']); });
+  return f;
+}
+function textoFiltros(){
+  const p = PERIODOS.find(x => x[0] === H.periodo)?.[1];
+  const partes = [H.tab === 'ordenes' ? 'Órdenes' : 'Hojas'];
+  if (H.periodo === 'rango') partes.push(`del ${H.desde?fechaD(H.desde):'inicio'} al ${H.hasta?fechaD(H.hasta):'hoy'}`); else partes.push(p);
+  if (H.tab === 'ordenes') partes.push('por fecha de ' + H.por);
+  ['tipo','marca','estado','tipoHoja'].forEach(k => H[k] && partes.push(H[k]));
+  if (H.soloAbiertas) partes.push('con hojas abiertas');
+  if (H.q) partes.push(`«${H.q}»`);
+  return partes.join(' · ');
+}
+function imprimirHistorial(){
+  const f = filasHistorial(), cab = f.shift();
+  const resumen = H.tab === 'ordenes' ? `${f.length} trabajos · Total ${plata(histOrdenes().reduce((s,o)=>s+(Number(o.total)||0),0))}` : `${f.length} hojas`;
+  const cols = H.tab === 'ordenes' ? [0,1,3,4,6,7,10,11] : [0,1,2,3,4,7];
+  const html = `<div class="pr-h"><div><img class="pr-logo" src="${LOGO}" alt="${esc(db.config.taller)}"><div>Historial — ${esc(textoFiltros())}</div></div><div style="text-align:right">Impreso: ${fecha(new Date().toISOString())}<div><b>${esc(resumen)}</b></div></div></div>
+    <table class="pr-t"><tr>${cols.map(i => `<th>${esc(cab[i])}</th>`).join('')}</tr>
+    ${f.map(r => `<tr>${cols.map(i => `<td>${esc(i===11 ? plata(r[i]) : r[i])}</td>`).join('')}</tr>`).join('')}</table>
+    <div class="pr-pie">Sistema: Propiedad de Cordobes Fausto</div>`;
+  $('#print-area').innerHTML = html;
+  abrirModal('Historial para imprimir', `<div class="comp" style="overflow-x:auto">${html}</div>
+    <p class="muted chico-txt">En la ventana de impresión elegí «Guardar como PDF».</p>
+    <div class="form-acc"><button class="btn" data-act="cerrar-modal">Cerrar</button><button class="btn pri" id="btn-print">${ico('imprimir')}Imprimir / guardar PDF</button></div>`);
+  $('#btn-print').onclick = () => { try { window.print(); } catch(e){ toast('Este navegador no permite imprimir desde acá','error'); } };
+}
+function copiarTSV(filas){
+  const tsv = filas.map(f => f.map(x => String(x).replace(/[\t\n]/g,' ')).join('\t')).join('\n');
+  if (!navigator.clipboard){ toast('No se pudo copiar en este navegador','error'); return; }
+  navigator.clipboard.writeText(tsv).then(() => toast(`Copiadas ${filas.length-1} filas: pegalas en Excel`,'ok'), () => toast('No se pudo copiar en este navegador','error'));
+}
+
+/* =========================================================
+   VISTA: EL TALLER (datos, servicios, horario, Red GPS Taller)
+   ========================================================= */
+function textoInfoTaller(){
+  const k = db.config;
+  return [`*${k.taller}*`, '', 'Servicios:', ...(k.servicios||[]).map(sv => '- ' + sv), '',
+    `Horario: ${k.horario}`, `Dirección: ${k.direccion}`, k.telefono ? `Tel.: ${k.telefono}` : '', k.email ? `Email: ${k.email}` : '', k.redGPS ? '' : null, k.redGPS || null]
+    .filter(x => x !== null).join('\n').replace(/\n{3,}/g, '\n\n');
+}
+function vInfo(){
+  const k = db.config;
+  const maps = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(k.direccion);
+  return `
+  <div class="info-hero"><img src="${LOGO}" alt="${esc(k.taller)}"></div>
+  <div class="grid2">
+    <div class="card" style="margin:0"><h3>Qué hacemos</h3>
+      <ul class="servicios">${(k.servicios||[]).map(sv => `<li>${ico('check')}<span>${esc(sv)}</span></li>`).join('')}</ul>
+      ${k.redGPS ? `<div class="red-gps"><span class="ic">${ico('pin')}</span><div><b>Red Nacional GPS Taller</b><div class="chico-txt">${esc(k.redGPS)}</div></div></div>` : ''}
+    </div>
+    <div class="card" style="margin:0"><h3>Horarios y contacto</h3>
+      <dl class="kv">
+        <dt>Horario</dt><dd>${esc(k.horario||'—')}</dd>
+        <dt>Dirección</dt><dd><a href="${maps}" target="_blank" rel="noopener">${esc(k.direccion||'—')}</a></dd>
+        <dt>Email</dt><dd>${k.email ? `<a href="mailto:${esc(k.email)}">${esc(k.email)}</a>` : '—'}</dd>
+        <dt>Teléfono</dt><dd>${esc(k.telefono||'—')}</dd>
+      </dl>
+      <div class="form-acc" style="justify-content:flex-start;margin-top:14px">
+        <a class="btn wa" href="https://wa.me/?text=${encodeURIComponent(textoInfoTaller())}" target="_blank" rel="noopener">${ico('wa')}Compartir por WhatsApp</a>
+        <a class="btn" href="${maps}" target="_blank" rel="noopener">${ico('auto')}Cómo llegar</a>
+        <a class="btn" href="#ajustes">${ico('editar')}Editar datos</a>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* =========================================================
+   VISTA: AJUSTES
+   ========================================================= */
+function vAjustes(){
+  const k = db.config;
+  const ej = db.ordenes.find(o => o.estado === 'Listo') || db.ordenes[0];
+  return `<div class="vhead"><h1>Ajustes</h1></div>
+  <form id="form-cfg" novalidate>
+  <div class="card"><h3>Datos del taller</h3>
+    <div class="campo" id="cfg-c-nom"><label for="cfg-nom">Nombre</label><input id="cfg-nom" value="${esc(k.taller)}"><span class="err-msg">Completá el nombre.</span></div>
+    <div class="campo"><label for="cfg-dir">Dirección</label><input id="cfg-dir" value="${esc(k.direccion)}"></div>
+    <div class="fila">
+      <div class="campo"><label for="cfg-tel">Teléfono</label><input id="cfg-tel" type="tel" value="${esc(k.telefono)}" placeholder="Opcional"></div>
+      <div class="campo"><label for="cfg-mail">Email</label><input id="cfg-mail" type="email" value="${esc(k.email||'')}"></div>
+    </div>
+    <div class="campo"><label for="cfg-hor">Horario</label><input id="cfg-hor" value="${esc(k.horario||'')}" placeholder="Lunes a viernes de 9 a 18 h"></div>
+    <div class="campo"><label for="cfg-serv">Servicios (uno por renglón)</label><textarea id="cfg-serv" rows="6">${esc((k.servicios||[]).join('\n'))}</textarea>
+      <span class="ayuda">Aparecen en «El taller», en el comprobante y como botones rápidos al cargar trabajos.</span></div>
+    <div class="campo"><label for="cfg-red">Texto de la red</label><input id="cfg-red" value="${esc(k.redGPS||'')}"><span class="ayuda">Si lo dejás vacío, no se muestra.</span></div>
+  </div>
+  <div class="card"><h3>Mensaje de «auto listo»</h3>
+    <div class="campo"><label for="cfg-pl">Plantilla</label><textarea id="cfg-pl" rows="9" style="min-height:200px">${esc(k.plantilla)}</textarea>
+      <span class="ayuda">Podés usar: {cliente} {vehiculo} {patente} {trabajos} {total} {taller} {direccion} {horario} {email} {orden} {km}</span></div>
+    <div class="form-acc" style="justify-content:flex-start;margin-top:0"><button type="button" class="btn chico" data-act="plantilla-def">${ico('reset')}Volver al texto original</button></div>
+    ${ej ? `<details style="margin-top:12px"><summary style="cursor:pointer;font-weight:600">Ver cómo queda con la orden ${nroOrden(ej.numero)}</summary><pre id="cfg-prev" style="white-space:pre-wrap;font-family:inherit;background:#f6f8fb;border:1px solid var(--borde);border-radius:8px;padding:12px;font-size:14px">${esc(mensajeListo(ej))}</pre></details>` : ''}
+  </div>
+  <div class="card"><h3>Mensaje de «se queda un poco más»</h3>
+    <div class="campo"><label for="cfg-pl2">Plantilla</label><textarea id="cfg-pl2" rows="6" style="min-height:150px">${esc(k.plantillaDemora||PLANTILLA_DEMORA)}</textarea>
+      <span class="ayuda">Mismos campos: {cliente} {vehiculo} {patente} {taller}…</span></div>
+    <div class="form-acc" style="justify-content:flex-start;margin-top:0"><button type="button" class="btn chico" data-act="plantilla2-def">${ico('reset')}Volver al texto original</button></div>
+  </div>
+  <div class="card"><h3>Mensajes guardados</h3>
+    <p class="chico-txt muted" style="margin-top:0">Se crean con «+ Crear mensaje personalizado» en la ficha del cliente o en la orden, y aparecen como botones.</p>
+    ${db.mensajes.length ? db.mensajes.map(m => `<div class="msg-guardado"><div><b>${esc(m.titulo)}</b><p>${esc(m.texto)}</p></div>
+      <button type="button" class="btn icono chico" style="width:40px" data-act="editar-msg" data-id="${m.id}" aria-label="Editar ${esc(m.titulo)}">${ico('editar')}</button>
+      <button type="button" class="btn icono chico peligro" style="width:40px" data-act="borrar-msg" data-id="${m.id}" aria-label="Borrar ${esc(m.titulo)}">${ico('borrar')}</button></div>`).join('')
+      : `<div class="vacio" style="padding:16px"><p style="margin:0">Todavía no guardaste mensajes.</p></div>`}
+  </div>
+  <div class="form-acc"><button class="btn pri" type="submit">${ico('check')}Guardar ajustes</button></div>
+  </form>
+  <div class="card" style="margin-top:16px"><h3>Datos</h3>
+    <p class="chico-txt muted" style="margin-top:0">En esta demo los datos se guardan solo en este equipo. En la versión final se comparten entre los dos celulares.</p>
+    <div class="form-acc" style="justify-content:flex-start">
+      <button class="btn" data-act="exportar">${ico('descargar')}Exportar órdenes (Excel/CSV)</button>
+      <button class="btn" data-act="copiar-excel">${ico('check')}Copiar para pegar en Excel</button>
+      <button class="btn peligro" data-act="reset">${ico('reset')}Restablecer datos de ejemplo</button>
+    </div>
+  </div>`;
+}
+vAjustes.despues = () => {
+  const ej = db.ordenes.find(o => o.estado === 'Listo') || db.ordenes[0];
+  $('#cfg-pl').addEventListener('input', () => { if (!$('#cfg-prev')) return; const prev = db.config.plantilla; db.config.plantilla = $('#cfg-pl').value; $('#cfg-prev').textContent = mensajeListo(ej); db.config.plantilla = prev; });
+  $('#form-cfg').onsubmit = (e) => {
+    e.preventDefault();
+    const nom = $('#cfg-nom').value.trim(), pin = db.config.pin;
+    $('#cfg-c-nom').classList.toggle('err', !nom);
+    if (!nom) return;
+    Object.assign(db.config, {taller:nom, direccion:$('#cfg-dir').value.trim(), telefono:$('#cfg-tel').value.trim(), email:$('#cfg-mail').value.trim(), horario:$('#cfg-hor').value.trim(),
+      servicios:$('#cfg-serv').value.split('\n').map(x => x.trim()).filter(Boolean), redGPS:$('#cfg-red').value.trim(), pin, plantilla:$('#cfg-pl').value || PLANTILLA_DEFECTO, plantillaDemora:$('#cfg-pl2').value || PLANTILLA_DEMORA});
+    guardar(); render(); toast('Ajustes guardados','ok');
+  };
+};
+
+function exportarCSV(){
+  const filas = [['Orden','Fecha ingreso','Estado','Patente','Vehículo','Cliente','WhatsApp','Km','Trabajos','Total','Fecha entrega']];
+  db.ordenes.slice().sort((a,b)=>a.numero-b.numero).forEach(o => { const v = vehiculo(o.vehiculoId), c = cliente(v?.clienteId);
+    filas.push([nroOrden(o.numero), fecha(o.fechaIngreso), o.estado, v?.patente||'', nombreVeh(v), c?.nombre||'', c?.telefono||'', o.km||'', o.tareas.map(t=>t.texto).join(' | '), o.total||0, o.fechaEntrega?fecha(o.fechaEntrega):'']); });
+  const csv = '﻿' + filas.map(f => f.map(x => `"${String(x).replace(/"/g,'""')}"`).join(';')).join('\r\n');
+  try {
+    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv;charset=utf-8'}));
+    a.download = 'ordenes-taller-ckp.csv'; document.body.appendChild(a); a.click(); a.remove();
+    toast('Archivo descargado','ok');
+  } catch(e){ toast('No se pudo descargar el archivo en este navegador','error'); }
+}
+
+/* =========================================================
+   EVENTOS (delegación)
+   ========================================================= */
+document.addEventListener('click', (e) => {
+  const el = e.target.closest('[data-act]'); if (!el) return;
+  const act = el.dataset.act;
+  const o = window.__ordenActual ? orden(window.__ordenActual) : null;
+  switch(act){
+    case 'cerrar-modal': cerrarModal(); break;
+    case 'cerrar-modal-fondo': if (e.target === el) cerrarModal(); break;
+    case 'filtro': filtroEstado = el.dataset.f; render(); break;
+    case 'estado': if (o && ruta().v === 'orden'){ const n = el.dataset.e;
+        if (CONFIG.ESTADOS.indexOf(n) < CONFIG.ESTADOS.indexOf(o.estado)) confirmar('Volver a un estado anterior', `¿Pasar la orden de «${esc(o.estado)}» a «${esc(n)}»?`, 'Sí, cambiar', () => cambiarEstado(o,n), false);
+        else cambiarEstado(o, n); } break;
+    case 'wa': if (o) abrirWA(o); break;
+    case 'tarea': if (o){ const t = o.tareas.find(x => x.id === el.dataset.t); if (t){ t.hecha = el.checked; guardar(); el.closest('li').classList.toggle('hecha', t.hecha); } } break;
+    case 'imprimir': if (o) imprimir(o); break;
+    case 'borrar-orden': if (o) confirmar('Borrar orden', `Se va a borrar la orden ${nroOrden(o.numero)} con sus fotos. Esto no se puede deshacer.`, 'Borrar', () => { db.ordenes = db.ordenes.filter(x => x.id !== o.id); db.hojas.forEach(h => { if (h.ordenId === o.id) h.ordenId = ''; }); guardar(); toast('Orden borrada'); ir('#taller'); }); break;
+    case 'ver-foto': if (o) abrirModal('Foto', `<img class="modal-img" src="${o.fotos[+el.dataset.i]}" alt="Foto de la orden">`); break;
+    case 'borrar-foto': if (o) confirmar('Borrar foto', '¿Borrar esta foto de la orden?', 'Borrar', () => { o.fotos.splice(+el.dataset.i,1); guardar(); render(); }); break;
+    case 'add-tarea': agregarTarea(); break;
+    case 'add-servicio': { const t = el.dataset.s; if (F.tareas.some(x => x.texto === t)) { toast('Ese trabajo ya está en la lista'); break; }
+        F.tareas.push({id:uid(), texto:t, hecha:false}); pintarTareas(); $('#c-tareas').classList.remove('err'); toast('Agregado: ' + t, 'ok'); } break;
+    case 'compartir-info': break;
+    case 'quitar-tarea': F.tareas.splice(+el.dataset.i,1); pintarTareas(); break;
+    case 'quitar-foto-form': F.fotos.splice(+el.dataset.i,1); pintarFotosForm(); break;
+    case 'prox': { const m = +el.dataset.m, d = new Date(); d.setMonth(d.getMonth()+m); $('#f-proxfecha').value = d.toISOString().slice(0,10); } break;
+    case 'prox-km': { const km = Number($('#f-km').value.replace(/\D/g,'')); if (!km){ toast('Cargá primero los km del vehículo','error'); $('#f-km').focus(); } else $('#f-proxkm').value = km + Number(el.dataset.k); } break;
+    case 'editar-vehiculo': modalVehiculo(el.dataset.id); break;
+    case 'borrar-vehiculo': { const v = vehiculo(el.dataset.id), n = ordenesDeVeh(v.id).length;
+        if (n) abrirModal('No se puede borrar', `<p>Este vehículo tiene ${n} ${n===1?'orden':'órdenes'} en su historial. Borrá primero las órdenes si de verdad querés eliminarlo.</p><div class="form-acc"><button class="btn pri" data-act="cerrar-modal">Entendido</button></div>`);
+        else confirmar('Borrar vehículo', `¿Borrar ${esc(nombreVeh(v))} (${esc(v.patente)})?`, 'Borrar', () => { db.vehiculos = db.vehiculos.filter(x => x.id !== v.id); db.hojas = db.hojas.filter(h => h.vehiculoId !== v.id); guardar(); ir('#vehiculos'); toast('Vehículo borrado'); }); } break;
+    case 'nuevo-cliente': modalCliente(null); break;
+    case 'editar-cliente': cerrarModal(); modalCliente(el.dataset.id); break;
+    case 'borrar-cliente': { const c = cliente(el.dataset.id), n = vehiculosDeCli(c.id).length;
+        if (n) abrirModal('No se puede borrar', `<p>${esc(c.nombre)} tiene ${n} ${n===1?'vehículo':'vehículos'} a su nombre. Pasalos a otro dueño o borralos primero.</p><div class="form-acc"><button class="btn pri" data-act="cerrar-modal">Entendido</button></div>`);
+        else confirmar('Borrar cliente', `¿Borrar a ${esc(c.nombre)}?`, 'Borrar', () => { db.clientes = db.clientes.filter(x => x.id !== c.id); guardar(); ir('#clientes'); toast('Cliente borrado'); }); } break;
+    case 'nueva-hoja': modalHoja({vid:el.dataset.vid, oid:el.dataset.oid || ''}); break;
+    case 'editar-hoja': modalHoja({id:el.dataset.id}); break;
+    case 'borrar-hoja': { const h = hoja(el.dataset.id); if (h) confirmar('Borrar hoja', `¿Borrar esta hoja (${esc(h.tipo)})? No se puede deshacer.`, 'Borrar', () => { const vid = h.vehiculoId; db.hojas = db.hojas.filter(x => x.id !== h.id); guardar(); toast('Hoja borrada'); ir('#vehiculo-' + vid); }); } break;
+    case 'resolver-hoja': { const h = hoja(el.dataset.id); if (!h) break;
+        abrirModal('Marcar como resuelta', `<div class="campo"><label for="hr-txt">¿Cómo se resolvió? (opcional)</label><textarea id="hr-txt" rows="4" placeholder="Ej.: se cambió el buje, quedó sin ruido"></textarea></div>
+          <div class="form-acc"><button class="btn" data-act="cerrar-modal">Cancelar</button><button class="btn pri" id="hr-ok">${ico('check')}Marcar resuelta</button></div>`);
+        $('#hr-ok').onclick = () => { Object.assign(h, {estado:'Resuelta', resueltaFecha:new Date().toISOString(), resolucion:$('#hr-txt').value.trim()}); guardar(); cerrarModal(); render(); toast('Hoja resuelta','ok'); };
+      } break;
+    case 'reabrir-hoja': { const h = hoja(el.dataset.id); if (h){ Object.assign(h, {estado:'Abierta', resueltaFecha:'', resolucion:''}); guardar(); render(); toast('Hoja abierta de nuevo'); } } break;
+    case 'ver-foto-hoja': { const h = hoja(window.__hojaActual); if (h) abrirModal('Foto', `<img class="modal-img" src="${h.fotos[+el.dataset.i]}" alt="Foto de la hoja">`); } break;
+    case 'borrar-foto-hoja': { const h = hoja(window.__hojaActual); if (h) confirmar('Borrar foto', '¿Borrar esta foto de la hoja?', 'Borrar', () => { h.fotos.splice(+el.dataset.i,1); guardar(); render(); }); } break;
+    case 'quitar-foto-hf': HF.fotos.splice(+el.dataset.i,1); pintarFotosHF(); break;
+    case 'h-tab': H.tab = el.dataset.t; H.estado = ''; render(); break;
+    case 'h-periodo': H.periodo = el.dataset.p; $$('[data-act=h-periodo]').forEach(b => { const on = b.dataset.p === H.periodo; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); });
+      $('#h-rango').hidden = H.periodo !== 'rango'; $('#hist-res').innerHTML = resultadosHistHTML(); { const n = filtrosActivos(); $('#h-n').textContent = n ? n + (n===1?' activo':' activos') : ''; } break;
+    case 'h-limpiar': H = {...H_DEF, tab:H.tab}; render(); break;
+    case 'h-copiar': copiarTSV(filasHistorial()); break;
+    case 'h-imprimir': imprimirHistorial(); break;
+    case 'msg': abrirMensaje({cid:el.dataset.cli, oid:el.dataset.ord || null, tipo:el.dataset.tipo}); break;
+    case 'plantilla2-def': $('#cfg-pl2').value = PLANTILLA_DEMORA; break;
+    case 'borrar-msg': { const m = db.mensajes.find(x => x.id === el.dataset.id);
+        if (m) confirmar('Borrar mensaje guardado', `¿Borrar el botón «${esc(m.titulo)}»?`, 'Borrar', () => { db.mensajes = db.mensajes.filter(x => x.id !== m.id); guardar(); render(); toast('Mensaje borrado'); }); } break;
+    case 'editar-msg': { const m = db.mensajes.find(x => x.id === el.dataset.id); if (!m) break;
+        abrirModal('Editar mensaje guardado', `<form id="form-msg" novalidate>
+          <div class="campo" id="em-c-tit"><label for="em-tit">Nombre del botón</label><input id="em-tit" maxlength="40" value="${esc(m.titulo)}"><span class="err-msg">Ponele un nombre.</span></div>
+          <div class="campo" id="em-c-txt"><label for="em-txt">Texto</label><textarea id="em-txt" rows="8" style="min-height:180px">${esc(m.texto)}</textarea>
+            <span class="ayuda">Podés usar: {cliente} {vehiculo} {patente} {trabajos} {total} {taller} {direccion} {horario} {email} {orden} {km}</span><span class="err-msg">Escribí el mensaje.</span></div>
+          <div class="form-acc"><button type="button" class="btn" data-act="cerrar-modal">Cancelar</button><button class="btn pri" type="submit">Guardar</button></div></form>`);
+        $('#form-msg').onsubmit = (ev) => { ev.preventDefault();
+          const t = $('#em-tit').value.trim(), x = $('#em-txt').value.trim();
+          $('#em-c-tit').classList.toggle('err', !t); $('#em-c-txt').classList.toggle('err', !x); if (!t || !x) return;
+          Object.assign(m, {titulo:t, texto:x}); guardar(); cerrarModal(); render(); toast('Mensaje actualizado','ok'); };
+      } break;
+    case 'plantilla-def': $('#cfg-pl').value = PLANTILLA_DEFECTO; $('#cfg-pl').dispatchEvent(new Event('input')); break;
+    case 'exportar': exportarCSV(); break;
+    case 'copiar-excel': {
+      const filas = [['Orden','Fecha ingreso','Estado','Patente','Vehículo','Cliente','WhatsApp','Km','Trabajos','Total','Fecha entrega']];
+      db.ordenes.slice().sort((a,b)=>a.numero-b.numero).forEach(o => { const v = vehiculo(o.vehiculoId), c = cliente(v?.clienteId);
+        filas.push([nroOrden(o.numero), fecha(o.fechaIngreso), o.estado, v?.patente||'', nombreVeh(v), c?.nombre||'', c?.telefono||'', o.km||'', o.tareas.map(t=>t.texto).join(' | '), o.total||0, o.fechaEntrega?fecha(o.fechaEntrega):'']); });
+      const tsv = filas.map(f => f.map(x => String(x).replace(/[\t\n]/g,' ')).join('\t')).join('\n');
+      if (!navigator.clipboard) { toast('No se pudo copiar en este navegador','error'); break; }
+      navigator.clipboard.writeText(tsv).then(() => toast('Copiado: pegalo en una planilla de Excel','ok'), () => toast('No se pudo copiar en este navegador','error'));
+    } break;
+    case 'reset': confirmar('Restablecer datos de ejemplo', 'Se borra todo lo que cargaste y vuelven los datos de muestra. ¿Seguro?', 'Restablecer', () => { db = datosEjemplo(); guardar(); filtroEstado='activos'; busqTaller=busqVeh=busqCli=''; H = {...H_DEF}; ir('#taller'); render(); toast('Datos de ejemplo restablecidos','ok'); }); break;
+    case 'salir': abrirSesion(false); $('#root').innerHTML=''; render(); break;
+  }
+});
+document.addEventListener('change', async (e) => {
+  const el = e.target;
+  if (el.dataset?.act === 'subir-foto' && el.files?.length){
+    const o = orden(window.__ordenActual); if (!o) return;
+    const nuevas = await leerFotos(el.files); o.fotos.push(...nuevas);
+    if (guardar()) { render(); toast(nuevas.length === 1 ? 'Foto agregada' : nuevas.length + ' fotos agregadas','ok'); } else { o.fotos.splice(-nuevas.length); }
+  }
+  if (el.dataset?.act === 'subir-foto-hoja' && el.files?.length){
+    const h = hoja(window.__hojaActual); if (!h) return;
+    const nuevas = await leerFotos(el.files); h.fotos = h.fotos || []; h.fotos.push(...nuevas);
+    if (guardar()) { render(); toast(nuevas.length === 1 ? 'Foto agregada' : nuevas.length + ' fotos agregadas','ok'); } else { h.fotos.splice(-nuevas.length); }
+  }
+  if (el.dataset?.act === 'foto-hf' && el.files?.length){
+    HF.fotos.push(...await leerFotos(el.files)); pintarFotosHF();
+  }
+  if (el.dataset?.act === 'foto-form' && el.files?.length){
+    F.fotos.push(...await leerFotos(el.files)); pintarFotosForm();
+  }
+});
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && $('#modal-root').innerHTML) cerrarModal(); });
+window.addEventListener('hashchange', () => { cerrarModal(); render(); });
+
+/* ---------- Arranque ---------- */
+cargar();
+render();
+</script>
+</body>
+</html>
